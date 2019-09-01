@@ -1,0 +1,166 @@
+                                                                                
+                            QUALITY ASSESSMENT OF SEA LEVEL DATA                
+                                           by the                               
+                   UH SEA LEVEL CENTER/NATIONAL OCEANOGRAPHIC DATA CENTER     
+                                 JOINT ARCHIVE FOR SEA LEVEL                    
+                                       updated: 07 Aug 2018
+              Station  : Lyttelton                 Latitude:  43 36.0S
+              Country  : New Zealand              Longitude: 172 43.0E
+              JASL #   : 667A                 Time Meridian: 180E (GMT + 12 hr) 
+              GLOSS #  : none Originator #: 107      NODC #: 34173201
+              Contributor  : Land Information New Zealand
+                             Lambton House
+                             160 Lambton Quay
+                             PO Box 5501
+                             Wellington, New Zealand 
+              Originator   : local port authority
+              Original Data: digital                                            
+              Instrmnt Type: unconfirmed
+              Digitzd Intvl: operator selective, normally 5 minutes             
+              Present Data : Hourly, daily, and monthly values obtained by:     
+                    Hourly : manual extraction of hourlies from digital record  
+                    Daily  : 119-point convolution filter (Bloomfield, 1976)    
+                             centered on noon applied to the hourly data        
+                             with respective periods of the 95, 50, and 5%      
+                             amplitude points at 124.0, 60.2, and 40.2 hours    
+                    Monthly: Simple average of all daily values; calculated if  
+                             7 or fewer days are missing                        
+              Span of data : 24 May 1994 - 31 Dec 2017
+              Gaps > 1 mon : 30 Dec 2010 - 13 Mar 2011
+              Time Refernce: GMT (hours 00-23)   Space-filler Flag   :-9999     
+              Units        : millimeters         Missing Data Flag   : 9999     
+              Existing     : Yes                 Operational         : Yes      
+              Sat. Trans.  : No                  Distribution        : 1995-2017
+              Refernce Levl: The sea level heights are referred to the Tide
+                             Gauge Zero (TGZ):
+                             
+                             TGZ is 4.401 m below B.M.UD 40 (LINZ code B40V), 
+                             a stainless steel pin set in concrete block on 
+                             main pier of overbridge to main wharves.
+
+              Comment      : A reference level shift on 31 Dec 1994 is under
+                             investigation.  The data are temporarily withheld.
+                             Otherwise, the daily and monthly values do not show
+                             any obvious shifts or trends.  The residuals
+                             show high frequency noise likely from seiching.
+                             The signature of the 28 Feb 2010 tsunami from
+                             Chile is evident. 
+
+                             2016 data were replaced by LINZ in July 2018.  An
+                             earthquake occurred on 13 Nov 2016, resulting in
+                             adjusting values after Nov gap to 31 Dec 2016 
+                             by -0.030 m.
+                                                                                
+                    CI MISSING              REPLACED GAPS     QUESTIONABLE      
+
+              YEAR (%) DATA                 OR BAD DATA       FLUCTUATIONS      
+              ---- --- -------------------- --------------- --------------------
+              1994  53 157-160,175-183,202- (04)149-(21)149 none
+                       211,231-239,336-338  (00)151-(11)151
+                                            (00)155-(23)155
+                                            (04)201-(23)201
+                                            (12)243-(11)244
+                                            (12)258-(11)259
+                                            (02)317-(20)317
+                                            (12)333-(20)333
+              1995 100 none                 (13)132-(20)132 none
+                                            (03)150-(01)151
+                                            (09)177-(04)178
+                                            (23)183-(21)184
+                                            (13)192-(03)193
+                                            (13)273-(20)273
+                                            (13)276-(20)276
+              1996  93 121-144              (11)083-(03)084 none
+                                            (12)098-(00)099
+                                            (21)117-(09)118
+                                            (22)120-(06)121
+                                            (12)214-(04)215
+                                            (20)244-(12)245
+              1997 100 none                 (11)041-(20)041 none
+                                            (11)068-(20)068
+                                            (06)107-(22)107
+                                            (08)134-(20)134
+                                            (12)278-(21)278
+              1998  98 22-24,69-75          (12)059-(11)060 none
+                                            (00)234-(12)234
+              1999  96 1-2,63-66,104-106,   (21)019-(11)020 none
+                       141-144,197-200,226- (11)039-(03)040
+                       228                  (12)110-(11)111
+                                            (12)152-(02)153
+                                            (12)161-(21)161
+                                            (12)171-(22)171
+                                            (13)276-(20)276
+                                            (09)305-(03)306
+                                            (12)364-(02)365
+              2000  98 41-44,105-110,       (10)004-(22)004 none
+                       264-265              (11)019-(00)020
+                                            (11)027-(21)027
+                                            (11)038-(20)038
+                                            (12)059-(21)059
+                                            (14)181-(01)182
+                                            (12)194-(04)195
+                                            (12)275-(22)275
+                                            (11)325-(19)325
+                                            (03)343-(11)343
+              2001  97 75-79,105-107,114-   (11)048-(20)048 none
+                       116,153-156,180-181  (11)090-(05)091
+                                            (12)095-(00)096
+                                            (11)126-(22)126
+                                            (10)134-(01)135
+                                            (10)144-(21)144
+                                            (12)280-(20)280
+                                            (01)284-(21)284
+              2002  94 129-151,324-325      (12)276-(11)277 none
+              2003 100 none                 (05)209-(21)209 none
+              2004  99 115-117,206-208      (12)216-(11)217 none
+                                            (07)294-(20)294
+              2005 100 none                 (12)094-(11)095 none
+              2006  99 86-90                none            none
+              2007  97 59-60,260-263,268-   (21)323-(20)324 none
+                       270,274-275,288-290, (06)326-(04)327
+                       296-298,303-304,310- (21)333-(05)334
+                       312
+              2008  99 43-44,52-53          (00)098-(11)098 none
+                                            (01)224-(00)225
+                                            (14)239-(07)240
+              2009  97 187-189,194-202      (10)190-(20)190 none
+                                            (15)191-(22)191
+                                            (10)193-(23)193
+                                            (00)208-(13)208
+              2010  99 364-365              (17)246-(04)247 none
+                                            (00)249-(20)249
+                                            (01)343-(19)343
+                                            (10)362-(02)363
+              2011  80 1-72,144-146         (09)086-(21)086 none
+                                            (03)164-(20)164
+                                            (08)237-(23)237
+              2012  99 55-56,82-84          (14)060-(00)061 none
+                                            (11)311-(23)311
+              2013  97 123-124,131-133,138- (04)006-(22)006 none
+                       141,153-155,254-257  (08)223-(17)223
+                                            (03)272-(10)272
+                                            (12)334-(11)335
+              2014  95 24-28,59-61,83-89,   (18)074-(11)075 none
+                       94-96,326-327,342-   (01)122-(11)122
+                       344                  (12)218-(11)219
+              2015 100 none                 (16)102-(02)103 none
+                                            (16)104-(23)104
+                                            (00)168-(09)168
+                                            (16)304-(00)305
+                                            (08)322-(22)322
+                                            (13)332-(01)333
+              2016  99 111-113,158-160,     (03)126-(11)126 none
+                       309-310              (11)143-(19)143
+                                            (04)144-(21)144
+                                            (03)150-(20)150
+              2017  99 101-103,365          (20)012-(19)013 none
+                                            (01)046-(23)046
+                                            (01)059-(11)059
+                                            (00)061-(08)061
+                                            (21)082-(13)083
+                                            (12)107-(11)108
+                                            (11)149-(21)149
+                                            (08)179-(02)180
+                                            (05)256-(12)256
+                                            (11)338-(21)338
+                                            (14)356-(06)357
