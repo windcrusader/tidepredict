@@ -1,0 +1,41 @@
+<html>
+<head>
+<style>
+h3 {font: sans-serif; color: #002277}
+.datagrid table { border-collapse: collapse; text-align: left; width: 500px; }
+.datagrid {font: normal 12px/150% Arial, Helvetica, sans-serif; background: #fff; overflow: hidden; border: 1px solid #006699; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; width:500px; }
+.datagrid table td, .datagrid table th { padding: 3px 10px; }
+.datagrid table thead th {background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );background:-moz-linear-gradient( center top, #006699 5%, #00557F 100% );filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');background-color:#006699; color:#FFFFFF; font-size: 15px; font-weight: bold; border-left: 1px solid #0070A8; }
+.datagrid table thead th:first-child { border: none; }
+.datagrid table tbody td { color: #00557F; border-left: 1px solid #E1EEF4;font-size: 12px;font-weight: normal; }
+.datagrid table tbody .alt td { background: #E1EEf4; color: #00557F; }
+.datagrid table tbody td:first-child { border-left: none; }
+.datagrid table tbody tr:last-child td { border-bottom: none; }
+.datagrid table tfoot td div { border-top: 1px solid #006699;background: #E1EEf4;}
+.datagrid table tfoot td { padding: 0; font-size: 12px }
+.datagrid table tfoot td div{ padding: 2px; }
+.date {float:left}
+.day {float:right}
+.time {float:left}
+.height {float:right}
+</style>
+</head>
+<body>
+<h3>Tide Table for {{location}} ({{month}} {{year}})</h3>
+<div class="datagrid">
+<table>
+<thead><tr><th>Date</th><th colspan="4">Predictions</th></thead>
+<tfoot><tr><td colspan="5"><div id="no-paging">Predictions given in {{units}} and {{tzname}} relative to {{datum}}</div></tr></tfoot>
+<tbody>
+{% for row in data %}
+<tr class="{{ loop.cycle('', 'alt') }}">
+	<td><strong class="date">{{row[0]['date']}}</strong><strong class="day">{{row[0]['day']}}</strong></td>
+	{% for e in row[1] %}
+	<td><span class="time">{{ e['time'] }}</span><span class="height">{{ e['height'] }}</span></td>
+	{% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+</body>
+</html>
