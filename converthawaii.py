@@ -10,13 +10,12 @@ exists for.
 Datasets and background info available from:
 ftp://ftp.soest.hawaii.edu/uhslc/rqds/
 """
-
+from __future__ import print_function
 from datetime import datetime, timedelta
 from tide import Tide
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import requests
 import io
 import zipfile
 import sys
@@ -25,6 +24,7 @@ from io import BytesIO
 import calendar
 from pytz import timezone
 from jinja2 import Environment, FileSystemLoader
+import os
 
 
 def process_unhw_data(years = [16,17], loc_code = "h667a"):
@@ -40,7 +40,7 @@ def process_unhw_data(years = [16,17], loc_code = "h667a"):
     timestamps are hourly.
 
     """
-    datadict = {}  
+    datalist = []  
     #print(f'ftp://ftp.soest.hawaii.edu/uhslc/rqds/pacific/hourly/{loc_code}.zip')
     ftp = FTP('ftp.soest.hawaii.edu')
     ftp.login() # Username: anonymous password: anonymous@
@@ -48,8 +48,8 @@ def process_unhw_data(years = [16,17], loc_code = "h667a"):
     def handle_binary(more_data):
         sio.write(more_data)
 
-    ftpstring = f"RETR uhslc/rqds/pacific/hourly/{loc_code}.zip"
-    print(f"ftp request:{ftpstring}")
+    ftpstring = "RETR uhslc/rqds/pacific/hourly/%s.zip"%loc_code
+    print("ftp request:%s"%ftpstring)
     resp = ftp.retrbinary(ftpstring, callback=handle_binary)
     sio.seek(0) # Go back to the start
 
@@ -64,8 +64,8 @@ def process_unhw_data(years = [16,17], loc_code = "h667a"):
             sys.exit()
 
         #print(zarchive)
-        datfile = f'i{loc_code[1:]}{year}.dat'
-        print(f"Opening data file:{datfile}")
+        datfile = "i%s%i.dat"%(loc_code[1:],year)
+        print("Opening data file:%s"%datfile)
         try:
             fdat = zarchive.open(datfile, "r")
         except RuntimeError:
@@ -96,46 +96,52 @@ def process_unhw_data(years = [16,17], loc_code = "h667a"):
                 else:
                     datakey += " %02d" %(j + 12) + ":00:00"
                 data = float(item)/1000
-                datadict[datakey] = data
+                datalist.append([datakey, data])
         fdat.close()
-    return datadict
+    return datalist
 
-def plot_data(datadict):
+def plot_data(datalist):
     """Plots the timestamp tide heights.
 
     This is useful for validating data
     """     
     print("Plotting tide data")
-    df = pd.DataFrame(list(datadict.items()), columns=['Date', 'DateValue'])
-    #print(df.head())
+    df = pd.DataFrame(datalist, columns=['Date', 'DateValue'])
+    #dump to file
+    mydir = os.path.dirname(os.path.realpath(__file__))
+    df.to_csv(os.path.join(mydir,"tidedata.csv"))
+    print(df.head())
     df.plot()
-    plt.show()
     print("Close plot window to continue")
+    plt.show()
+    
     
 
-def output_to_file(datadict):
+def output_to_file(datalist):
     """Outputs the processed datadict to a textfile
     
         Mainly used for debugging purposes
     """
-    f2 = open(f"unhw_processed.dat", "w")
-    for item in datadict.items():
-       print(f"{item[0]} {item[1]}", file = f2)
+    f2 = open("unhw_processed.dat", "w")
+    for item in datalist:
+       print("%s %s" %(item[0], item[1]), file = f2)
     f2.close()
 
-def fit_model(datadict):
+def fit_model(datalist):
     """Fits harmonic model to tides using pytides
     """
 
     t = []
     heights = []
-    for dt, height in datadict.items():
+    for dt, height in datalist:
         #print(line.split()[:2])
         t.append(datetime.strptime(dt, "%Y-%m-%d %H:%M:%S"))
         heights.append(float(height))
 
     ##Fit the tidal data to the harmonic model using Pytides
     print("Fitting harmonic model")
+    print(heights[:5])
+    print(t[:5])
     my_tide = Tide.decompose(np.array(heights), np.array(t))
     return my_tide
 
@@ -175,9 +181,12 @@ def output_html(my_tide, month, year):
 
     ##Render our template
     #print(" ".join(rows))
-    env = Environment(loader=FileSystemLoader(""),trim_blocks=True)
+    #get the current working directory - this is useful on windows machines
+    mydir = os.path.dirname(os.path.realpath(__file__))
+    print(mydir)
+    env = Environment(loader=FileSystemLoader(mydir),trim_blocks=True)
     template = env.get_template('template.html')
-    with open("output.html", "w") as fh:
+    with open(os.path.join(mydir,"output.html"), "w") as fh:
         print(template.render(
         location = location,
         tzname = tzname,
