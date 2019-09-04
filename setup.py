@@ -1,4 +1,4 @@
-import pathlib
+conimport pathlib
 import setuptools
 
 # The directory containing this file
