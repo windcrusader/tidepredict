@@ -12,7 +12,7 @@ ftp://ftp.soest.hawaii.edu/uhslc/rqds/
 """
 from __future__ import print_function
 from datetime import datetime, timedelta
-from tide import Tide
+from tidepredict.tide import Tide
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -26,8 +26,28 @@ from pytz import timezone
 from jinja2 import Environment, FileSystemLoader
 import os
 
+def get_data_url(ocean = "pacific"):
+    """returns the data file url for the uhslc server for a specific
+    ocean area.
 
-def process_unhw_data(years = [16,17], loc_code = "h667a"):
+    accepted inputs are one of the following locations:
+    pacific
+    indian
+    atlantic
+    """
+    #do string.lower to make it match for any case (user friendly)
+    if ocean.lower() == "pacific":
+        ftpurl = "uhslc/rqds/pacific"
+    elif ocean.lower() == "atlantic":
+        ftpurl = "uhslc/rqds/atlantic"
+    elif ocean.lower() == "indian":
+        ftpurl = "uhslc/rqds/indian"
+    else:
+        raise Exception("Ocean must be one of: Indian, Pacific, or Atlantic")
+        sys.exit()
+    return ftpurl        
+
+def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     """Processes university of Hawaii data into a Python dictionary.
 
     Inputs:
@@ -48,7 +68,7 @@ def process_unhw_data(years = [16,17], loc_code = "h667a"):
     def handle_binary(more_data):
         sio.write(more_data)
 
-    ftpstring = "RETR uhslc/rqds/pacific/hourly/%s.zip"%loc_code
+    ftpstring = "RETR %s/hourly/%s.zip"%(ftpurl,loc_code)
     print("ftp request:%s"%ftpstring)
     resp = ftp.retrbinary(ftpstring, callback=handle_binary)
     sio.seek(0) # Go back to the start
@@ -151,7 +171,7 @@ def output_html(my_tide, month, year):
     """
     ##Prepare our variables for the template
     location = "Lyttelton, NZ"
-    tzname = "Pacific/Auckland"
+    tzname = "US/Pacific"
     tz = timezone(tzname)
     utc = timezone('UTC')
     datum = "MLLW"
@@ -199,7 +219,7 @@ def output_html(my_tide, month, year):
 
 if __name__ == "__main__":
 
-    datadict = process_unhw_data()
+    datadict = process_unhw_data(ftpurl = get_data_url(ocean = "pacific"))
     plot_data(datadict)
     my_tides = fit_model(datadict)
     print(my_tides)

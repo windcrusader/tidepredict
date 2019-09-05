@@ -2,7 +2,7 @@ from functools import reduce
 import string
 import operator as op
 import numpy as np
-import nodal_corrections as nc
+from tidepredict import nodal_corrections as nc
 
 class BaseConstituent(object):
 	xdo_int = {

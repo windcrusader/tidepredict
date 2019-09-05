@@ -1,4 +1,3 @@
-
 import numpy as np
 d2r, r2d = np.pi/180.0, 180.0/np.pi
 

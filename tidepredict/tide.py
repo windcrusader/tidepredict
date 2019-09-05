@@ -1,5 +1,9 @@
-
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
+#below for compatibility with Python < 3.8
+try:
+    from collections.abc import Iterable # noqa
+except ImportError:
+    from collections import Iterable  # noqa
 from itertools import takewhile, count
 try:
 	from itertools import izip, ifilter
@@ -9,8 +13,8 @@ except ImportError: #Python3
 from datetime import datetime, timedelta
 import numpy as np
 from scipy.optimize import leastsq, fsolve
-from astro import astro
-import constituent
+from tidepredict.astro import astro
+import tidepredict.constituent as constituent
 
 d2r, r2d = np.pi/180.0, 180.0/np.pi
 
