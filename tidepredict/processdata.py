@@ -20,11 +20,12 @@ import io
 import zipfile
 import sys
 from ftplib import FTP
-from io import BytesIO
 import calendar
 from pytz import timezone
 from jinja2 import Environment, FileSystemLoader
 import os
+from tidepredict import ftp_helpers
+from tidepredict import process_station_list
 
 def get_data_url(ocean = "pacific"):
     """returns the data file url for the uhslc server for a specific
@@ -45,7 +46,7 @@ def get_data_url(ocean = "pacific"):
     else:
         raise Exception("Ocean must be one of: Indian, Pacific, or Atlantic")
         sys.exit()
-    return ftpurl        
+    return ftpurl  
 
 def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     """Processes university of Hawaii data into a Python dictionary.
@@ -61,20 +62,10 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
 
     """
     datalist = []  
-    #print(f'ftp://ftp.soest.hawaii.edu/uhslc/rqds/pacific/hourly/{loc_code}.zip')
-    ftp = FTP('ftp.soest.hawaii.edu')
-    ftp.login() # Username: anonymous password: anonymous@
-    sio = BytesIO()
-    def handle_binary(more_data):
-        sio.write(more_data)
-
-    ftpstring = "RETR %s/hourly/%s.zip"%(ftpurl,loc_code)
-    print("ftp request:%s"%ftpstring)
-    resp = ftp.retrbinary(ftpstring, callback=handle_binary)
-    sio.seek(0) # Go back to the start
-
     #print(zipdat)
     #print(filedata)
+    sio = ftp_helpers.get_byte_stream("ftp.soest.hawaii.edu",
+                                      "uhslc/rqds/pacific/hourly/h551a.zip")
     for year in years:
         #try to open the downloaded zip archive
         try:
@@ -218,6 +209,10 @@ def output_html(my_tide, month, year):
         ), file = fh)    
 
 if __name__ == "__main__":
+
+    process_station_list.create_station_dataframe()
+
+    sys.exit()
 
     datadict = process_unhw_data(ftpurl = get_data_url(ocean = "pacific"))
     plot_data(datadict)
