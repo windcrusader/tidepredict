@@ -25,7 +25,9 @@ from pytz import timezone
 from jinja2 import Environment, FileSystemLoader
 import os
 from tidepredict import ftp_helpers
-from tidepredict import process_station_list
+from tidepredict import constants
+
+
 
 def get_data_url(ocean = "pacific"):
     """returns the data file url for the uhslc server for a specific
@@ -65,7 +67,7 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     #print(zipdat)
     #print(filedata)
     sio = ftp_helpers.get_byte_stream("ftp.soest.hawaii.edu",
-                                      "uhslc/rqds/pacific/hourly/h551a.zip")
+                                      "uhslc/rqds/pacific/hourly/%s.zip"%loc_code)
     for year in years:
         #try to open the downloaded zip archive
         try:
@@ -162,7 +164,7 @@ def output_html(my_tide, month, year):
     """
     ##Prepare our variables for the template
     location = "Lyttelton, NZ"
-    tzname = "US/Pacific"
+    tzname = "Pacific/Auckland"
     tz = timezone(tzname)
     utc = timezone('UTC')
     datum = "MLLW"
@@ -209,13 +211,6 @@ def output_html(my_tide, month, year):
         ), file = fh)    
 
 if __name__ == "__main__":
-
-    process_station_list.create_station_dataframe()
-
-    sys.exit()
-
-    datadict = process_unhw_data(ftpurl = get_data_url(ocean = "pacific"))
-    plot_data(datadict)
-    my_tides = fit_model(datadict)
-    print(my_tides)
-    output_html(my_tides, 9, 2019)
+    pass
+    #plot_data(datadict)
+    #output_html(my_tides, 9, 2019)

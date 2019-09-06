@@ -5,6 +5,8 @@ if the user specified string can be matched to a station
 from tidepredict import ftp_helpers
 import pandas as pd
 from io import StringIO
+import os
+from tidepredict import constants
 
 def get_station_files():
     """Get bytes IO objects from each of the station list files
@@ -37,9 +39,12 @@ def create_station_dataframe():
                                    "CI", "Contributor"])
 
     #dump to file
-    #todo this should go in user home.
-    #todo option to force refresh of this.
-    stat_df.to_csv("stations.csv")
+    if not os.path.exists(constants.savefilelocation):
+        os.mkdir(constants.savefilelocation)
+    else:    
+        stat_df.to_csv(os.path.join(constants.savefilelocation,
+                                    constants.stationfile))
+    return stat_df
     
 
     
