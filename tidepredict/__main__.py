@@ -12,7 +12,7 @@ from tidepredict.tide import Tide
 import os
 import pandas as pd
 import json
-from datetime import datetime
+import datetime
 
 
 
@@ -42,6 +42,17 @@ parser.add_argument('-l',
 parser.add_argument('-r',
                     action="store_true",
                     help="""Force refresh of station database""")  
+
+parser.add_argument('-b',
+                    action="store",
+                    help = "Start time to begin predictions",
+                    metavar = "YYYY-MM-DD HH:MM")
+
+parser.add_argument('-e',
+                    action="store",
+                    help = "end time for predictions",
+                    metavar = "YYYY-MM-DD HH:MM")
+
 
     #todo add the rest of the xtide arguments once I've implemented the above
     # correctly.   
@@ -101,9 +112,32 @@ def process_args(args):
         print("Harmonics data not found for %s" %args.l)
         print("Use option -harmgen to generate harmonics for this location")
 
+    #check validity of start time
+    if args.b is not None:
+        try:
+            start = datetime.datetime.strptime(args.b,"%Y-%m-%d %H:%M")
+        except ValueError:
+            print("Start time format does not match expected YYYY-MM-DD HH:MM")
+            sys.exit()
+    else:
+        start = datetime.datetime.today()
+
+    #check validity of end time
+    if args.e is not None:
+        try:
+            end = datetime.datetime.strptime(args.e,"%Y-%m-%d %H:%M")
+        except ValueError:
+            print("End time format does not match expected YYYY-MM-DD HH:MM")
+            sys.exit()
+    else:
+        end = start + datetime.timedelta(days=3)
+    
+
     #output tide predictions
     if args.m == "p":
-        predictions = processdata.predict_plain(tide)
+        predictions = processdata.predict_plain(tide,
+                                                startdate=start,
+                                                enddate=end)
         print(predictions)
     return predictions
     

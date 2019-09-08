@@ -52,11 +52,11 @@ def get_data_url(ocean = "pacific"):
         sys.exit()
     return ftpurl  
 
-def predict_plain(tide, startdate = datetime.datetime.today(), days = 3):
+def predict_plain(tide, startdate, enddate):
     """
     Generates tide predictions similar to Xtide's plain mode.
-    input: startdate for prediction (Python datetime)
-    days:  number of days to predict for (default = 3)
+    startdate for prediction (Python datetime)
+    enddate:  enddate for prediction
     tide: the tide model to use
     """
     #todo pass the function the requested timezone based on the location
@@ -67,36 +67,29 @@ def predict_plain(tide, startdate = datetime.datetime.today(), days = 3):
     utc = pytz.utc
     #print(utc)
     extrema = "All times in TZ: %s\n" %(tz)
-    for day in range(days):
-        #subtract the gathered hours and minutes from the passed in time
-        #so that we get tides for the full day
-        start = (tz.localize(startdate) 
-                - datetime.timedelta(hours=startdate.hour,
-                                     minutes = startdate.minute,
-                                     seconds = startdate.second)
-                + datetime.timedelta(days=day))
-        end = start + datetime.timedelta(days=1)
-        #print(start)
-        #print(end)
-        startUTC = utc.normalize(start.astimezone(utc))
-        endUTC = utc.normalize(end.astimezone(utc))
-        extremaUTC = tide.extrema(startUTC, endUTC)
-        #print(extremaUTC)
-        
-        for e in extremaUTC:
-            #print(e)
-            time = tz.normalize(e[0].astimezone(tz))
-            ##Round the time to the nearest minute
-            time = time + datetime.timedelta(minutes=time.second > 30)
-            height = e[1]
-            extrema += time.strftime("%Y-%m-%d %H%M")
-            extrema += " %5.2f" %height
-            if e[2] == "L":
-                extrema += " Low Tide"
-            else:
-                extrema += " High Tide"
-            extrema += "\n"    
-     
+    start = tz.localize(startdate)
+    end = tz.localize(enddate)
+    #print(start)
+    #print(end)
+    startUTC = utc.normalize(start.astimezone(utc))
+    endUTC = utc.normalize(end.astimezone(utc))
+    extremaUTC = tide.extrema(startUTC, endUTC)
+    #print(extremaUTC)
+    
+    for e in extremaUTC:
+        #print(e)
+        time = tz.normalize(e[0].astimezone(tz))
+        ##Round the time to the nearest minute
+        time = time + datetime.timedelta(minutes=time.second > 30)
+        height = e[1]
+        extrema += time.strftime("%Y-%m-%d %H%M")
+        extrema += " %5.2f" %height
+        if e[2] == "L":
+            extrema += " Low Tide"
+        else:
+            extrema += " High Tide"
+        extrema += "\n"    
+    
     return extrema
 
 
