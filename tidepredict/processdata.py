@@ -213,8 +213,8 @@ def fit_model(datalist):
 
     ##Fit the tidal data to the harmonic model using Pytides
     print("Fitting harmonic model")
-    print(heights[:5])
-    print(t[:5])
+    #print(heights[:5])
+    #print(t[:5])
     my_tide = Tide.decompose(np.array(heights), np.array(t))
     return my_tide
 

@@ -66,6 +66,7 @@ def process_args(args):
             raise EnvironmentError
     except EnvironmentError:
         #Not found then create it.
+        print("Refreshing stations list from online source.")
         stations = process_station_list.create_station_dataframe()
 
     #extract station data from stations df
@@ -73,7 +74,8 @@ def process_args(args):
     #print(thestation)
     
     if thestation.empty:
-        raise Exception("Station not found")
+        print("Station not found")
+        sys.exit()
 
     loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
     if args.harmgen is True:
@@ -111,6 +113,7 @@ def process_args(args):
     except FileNotFoundError:
         print("Harmonics data not found for %s" %args.l)
         print("Use option -harmgen to generate harmonics for this location")
+        sys.exit()
 
     #check validity of start time
     if args.b is not None:
