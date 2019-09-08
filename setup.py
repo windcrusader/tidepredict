@@ -1,4 +1,8 @@
-import pathlib
+import sys
+if sys.version_info[0] < 3:
+    import pathlib2 as pathlib
+else:
+    import pathlib
 import setuptools
 
 # The directory containing this file

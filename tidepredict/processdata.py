@@ -11,22 +11,24 @@ Datasets and background info available from:
 ftp://ftp.soest.hawaii.edu/uhslc/rqds/
 """
 from __future__ import print_function
-from datetime import datetime, timedelta
+import datetime
 from tidepredict.tide import Tide
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pandas as pd
 import io
 import zipfile
 import sys
 from ftplib import FTP
 import calendar
-from pytz import timezone
+import pytz
 from jinja2 import Environment, FileSystemLoader
 import os
 from tidepredict import ftp_helpers
 from tidepredict import constants
-
+import json
+from tidepredict import constituent
+import dateutil
 
 
 def get_data_url(ocean = "pacific"):
@@ -49,6 +51,71 @@ def get_data_url(ocean = "pacific"):
         raise Exception("Ocean must be one of: Indian, Pacific, or Atlantic")
         sys.exit()
     return ftpurl  
+
+def predict_plain(tide, startdate = datetime.datetime.today(), days = 3):
+    """
+    Generates tide predictions similar to Xtide's plain mode.
+    input: startdate for prediction (Python datetime)
+    days:  number of days to predict for (default = 3)
+    tide: the tide model to use
+    """
+    #todo pass the function the requested timezone based on the location
+    #in the harmonics file
+
+    tz = pytz.timezone("Pacific/Auckland")
+    #print(tz)
+    utc = pytz.utc
+    #print(utc)
+    extrema = "All times in TZ: %s\n" %(tz)
+    for day in range(days):
+        #subtract the gathered hours and minutes from the passed in time
+        #so that we get tides for the full day
+        start = (tz.localize(startdate) 
+                - datetime.timedelta(hours=startdate.hour,
+                                     minutes = startdate.minute,
+                                     seconds = startdate.second)
+                + datetime.timedelta(days=day))
+        end = start + datetime.timedelta(days=1)
+        #print(start)
+        #print(end)
+        startUTC = utc.normalize(start.astimezone(utc))
+        endUTC = utc.normalize(end.astimezone(utc))
+        extremaUTC = tide.extrema(startUTC, endUTC)
+        #print(extremaUTC)
+        
+        for e in extremaUTC:
+            #print(e)
+            time = tz.normalize(e[0].astimezone(tz))
+            ##Round the time to the nearest minute
+            time = time + datetime.timedelta(minutes=time.second > 30)
+            height = e[1]
+            extrema += time.strftime("%Y-%m-%d %H%M")
+            extrema += " %5.2f" %height
+            if e[2] == "L":
+                extrema += " Low Tide"
+            else:
+                extrema += " High Tide"
+            extrema += "\n"    
+     
+    return extrema
+
+
+def reconstruct_tide_model(tm_file):
+    """
+    Method to reconstruct the tide model from the json model file
+    input: tm_file, which is the open json file
+    """
+    tidemodel = json.loads(tm_file.read())
+    constits = [constituent.__getattribute__("_"+cstr) 
+                for cstr in tidemodel[0]]
+    model = np.zeros(len(tidemodel[0]), dtype = Tide.dtype)
+    assert len(constits) == len(tidemodel[1]) == len(tidemodel[2]), \
+           "model file arrays must be equal length"
+    model['constituent'] = constits
+    model['amplitude'] = tidemodel[1]
+    model['phase'] = tidemodel[2]
+    tide = Tide(model = model, radians = False)
+    return tide
 
 def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     """Processes university of Hawaii data into a Python dictionary.
@@ -148,7 +215,7 @@ def fit_model(datalist):
     heights = []
     for dt, height in datalist:
         #print(line.split()[:2])
-        t.append(datetime.strptime(dt, "%Y-%m-%d %H:%M:%S"))
+        t.append(datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S"))
         heights.append(float(height))
 
     ##Fit the tidal data to the harmonic model using Pytides
@@ -165,15 +232,15 @@ def output_html(my_tide, month, year):
     ##Prepare our variables for the template
     location = "Lyttelton, NZ"
     tzname = "Pacific/Auckland"
-    tz = timezone(tzname)
-    utc = timezone('UTC')
+    tz = datetime.timezone(tzname)
+    utc = datetime.timezone('UTC')
     datum = "MLLW"
     units = "metres"
     rows = []
     print("Running tide prediction")
     for day in range(1,calendar.monthrange(year,month)[1] + 1):
-        start = tz.localize(datetime(year, month, day))
-        end = start + timedelta(days=1)
+        start = tz.localize(datetime.datetime(year, month, day))
+        end = start + datetime.timedelta(days=1)
         startUTC = utc.normalize(start.astimezone(utc))
         endUTC = utc.normalize(end.astimezone(utc))
         extremaUTC = my_tide.extrema(startUTC, endUTC)
@@ -184,7 +251,7 @@ def output_html(my_tide, month, year):
             #print(e)
             time = tz.normalize(e[0].astimezone(tz))
             ##Round the time to the nearest minute
-            time = time + timedelta(minutes=time.second > 30)
+            time = time + datetime.timedelta(minutes=time.second > 30)
             height = e[1]
             extrema.append({'time': time.strftime('%H:%M'), 'height': "{0:.2f}".format(height)})
         #This is just for nicer formatting of days with only three tides
