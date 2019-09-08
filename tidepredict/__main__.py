@@ -70,11 +70,15 @@ def process_args(args):
         stations = process_station_list.create_station_dataframe()
 
     #extract station data from stations df
-    thestation = stations[stations.loc_name == args.l]
-    #print(thestation)
+    thestation = stations[stations.loc_name.str.contains(args.l)]
+    print(thestation)
     
     if thestation.empty:
         print("Station not found")
+        sys.exit()
+    if len(thestation) > 1:
+        print("Station name ambiguous, the following stations were found:")
+        print(thestation)
         sys.exit()
 
     loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
