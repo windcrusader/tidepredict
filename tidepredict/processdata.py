@@ -137,7 +137,11 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
             sys.exit()
 
         #print(zarchive)
-        datfile = "i%s%i.dat"%(loc_code[1:],year)
+        if year > int(str(datetime.datetime.today().year)[:-2]):
+            #assume pre 2000 so h prefix required.
+            datfile = "h%s%i.dat"%(loc_code[1:],year)
+        else:    
+            datfile = "i%s%i.dat"%(loc_code[1:],year)
         print("Opening data file:%s"%datfile)
         try:
             fdat = zarchive.open(datfile, "r")
