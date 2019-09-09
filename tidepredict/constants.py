@@ -1,16 +1,24 @@
 """
 Constants used throughout the module
 """
-from os.path import expanduser
-import os
+import sys
+if sys.version_info[0] < 3:
+    import pathlib2 as pathlib
+else:
+    import pathlib
 
 #home location
-home = expanduser("~")
+HOME = pathlib.Path.home()
 #folder to store tidepredict files
-savefilelocation = os.path.join(home,".tidepredict")
+SAVEFILELOCATION = HOME / ".tidepredict" 
 #stations csv file
-stationfile = os.path.join(savefilelocation,"stations.csv")
+STATIONFILE = SAVEFILELOCATION / "stations.csv"
 #saveharmdata location
-saveharmlocation = os.path.join(home, savefilelocation, "harmdata")
+SAVEHARMLOCATION = HOME / SAVEFILELOCATION / "harmdata"
 #ocean dict
 ocean_dict = {'P':"pacific","I":"indian","A":"atlantic"}
+#ftp base address
+FTP_BASE = "ftp.soest.hawaii.edu"
+#urls to QA data
+def qa_ftp(ocean):
+    return "uhslc/rqds/%s/doc/" %ocean

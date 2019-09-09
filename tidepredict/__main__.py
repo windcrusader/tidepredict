@@ -8,13 +8,11 @@ from tidepredict import processdata
 from tidepredict import process_station_list
 from tidepredict import constants
 from tidepredict import constituent
+from tidepredict import process_station_info
 from tidepredict.tide import Tide
-import os
 import pandas as pd
 import json
 import datetime
-
-
 
 parser = argparse.ArgumentParser(description=
                                 'tidepredict: a tide prediction module.')
@@ -60,7 +58,7 @@ parser.add_argument('-e',
 def process_args(args):
     #First try to read in the location list
     try:
-        stations = pd.read_csv(constants.stationfile)
+        stations = pd.read_csv(constants.STATIONFILE)
         if args.r:
             #force refresh of stations if command line arg is forced
             raise EnvironmentError
@@ -82,6 +80,7 @@ def process_args(args):
         sys.exit()
 
     loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
+    harmfilepath = constants.SAVEHARMLOCATION / (loc_code + ".json")
     if args.harmgen is True:
         #get the last two years that data exists for
         lastyear = int(thestation.data_years.tolist()[0][-2:])
@@ -94,25 +93,27 @@ def process_args(args):
                                                   loc_code = loc_code)
 
         my_tides = processdata.fit_model(datadict)
-        if not os.path.exists(constants.saveharmlocation):
-            os.mkdir(constants.saveharmlocation)
-        harmfile = open(os.path.join(constants.saveharmlocation,loc_code+".json"), "w+")
-        #print(my_tides)
-        #jpic = pickle.dumps(my_tides.model)
-        cons = [item.name for item in my_tides.model['constituent']]
-        jpic = json.dumps([cons,my_tides.model['amplitude'].tolist(),my_tides.model['phase'].tolist()])
-        #print(my_tides.model['constituents'])
-        print(jpic, file=harmfile)
-        harmfile.close()
+
+        #get QA doc
+        loc_info = process_station_info.get_station_info(loc_code, ocean)
+        if not constants.SAVEHARMLOCATION.exists():
+            constants.SAVEHARMLOCATION.mkdir()
+    
+        with open(harmfilepath, "w+") as harmfile:
+            #print(my_tides)
+            #jpic = pickle.dumps(my_tides.model)
+            cons = [item.name for item in my_tides.model['constituent']]
+            jpic = json.dumps([cons,my_tides.model['amplitude'].tolist(),my_tides.model['phase'].tolist()])
+            #print(my_tides.model['constituents'])
+            print(jpic, file=harmfile)
     
     #Try to get the saved harmonics constants from file.
     #Tide prediction using pre-generated constants is much faster than 
     #having to derive them again.
     try:
-        with open(os.path.join(constants.saveharmlocation,
-                  loc_code+".json"),"r") as tidemodelfile:
+        with open(harmfilepath,"r") as harmfile:
             #Reconstruct tide model from saved harmonics data
-            tide = processdata.reconstruct_tide_model(tidemodelfile)
+            tide = processdata.reconstruct_tide_model(harmfile)
             #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
     except FileNotFoundError:
         print("Harmonics data not found for %s" %args.l)

@@ -23,13 +23,15 @@ from ftplib import FTP
 import calendar
 import pytz
 from jinja2 import Environment, FileSystemLoader
-import os
 from tidepredict import ftp_helpers
 from tidepredict import constants
 import json
 from tidepredict import constituent
 import dateutil
-
+if sys.version_info[0] < 3:
+    import pathlib2 as pathlib
+else:
+    import pathlib
 
 def get_data_url(ocean = "pacific"):
     """returns the data file url for the uhslc server for a specific
@@ -126,8 +128,8 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     datalist = []  
     #print(zipdat)
     #print(filedata)
-    sio = ftp_helpers.get_byte_stream("ftp.soest.hawaii.edu",
-                                      "uhslc/rqds/pacific/hourly/%s.zip"%loc_code)
+    sio = ftp_helpers.get_byte_stream(constants.FTP_BASE,
+                                      "%s/hourly/%s.zip"%(ftpurl,loc_code))
     for year in years:
         #try to open the downloaded zip archive
         try:
@@ -185,8 +187,8 @@ def plot_data(datalist):
     print("Plotting tide data")
     df = pd.DataFrame(datalist, columns=['Date', 'DateValue'])
     #dump to file
-    mydir = os.path.dirname(os.path.realpath(__file__))
-    df.to_csv(os.path.join(mydir,"tidedata.csv"))
+    mydir = pathlib.Path().home()
+    df.to_csv(mydir / "tidedata.csv")
     print(df.head())
     df.plot()
     print("Close plot window to continue")
@@ -259,11 +261,11 @@ def output_html(my_tide, month, year):
     ##Render our template
     #print(" ".join(rows))
     #get the current working directory - this is useful on windows machines
-    mydir = os.path.dirname(os.path.realpath(__file__))
+    mydir = pathlib.Path.home()
     print(mydir)
     env = Environment(loader=FileSystemLoader(mydir),trim_blocks=True)
     template = env.get_template('template.html')
-    with open(os.path.join(mydir,"output.html"), "w") as fh:
+    with open(mydir / "output.html", "w") as fh:
         print(template.render(
         location = location,
         tzname = tzname,
