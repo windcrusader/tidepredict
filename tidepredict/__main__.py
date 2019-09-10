@@ -14,6 +14,8 @@ import pandas as pd
 import json
 import datetime
 
+__version__ = "0.2.0"
+
 parser = argparse.ArgumentParser(description=
                                 'tidepredict: a tide prediction module.')
 parser.add_argument('-harmgen',
@@ -96,14 +98,24 @@ def process_args(args):
 
         #get QA doc
         loc_info = process_station_info.get_station_info(loc_code, ocean)
+        #set location data version for compatibility
+        loc_info['version'] = __version__
+        loc_info['lat'] = thestation.Lat.tolist()[0]
+        loc_info['lon'] = thestation.Lon.tolist()[0]
+        loc_info['name'] = thestation.loc_name.tolist()[0]
+        loc_info['country'] = thestation.country.tolist()[0]
+        loc_info['contributor'] = thestation.Contributor.tolist()[0]
         if not constants.SAVEHARMLOCATION.exists():
             constants.SAVEHARMLOCATION.mkdir()
     
         with open(harmfilepath, "w+") as harmfile:
             #print(my_tides)
             #jpic = pickle.dumps(my_tides.model)
-            cons = [item.name for item in my_tides.model['constituent']]
-            jpic = json.dumps([cons,my_tides.model['amplitude'].tolist(),my_tides.model['phase'].tolist()])
+            loc_info['cons'] = [item.name for item in my_tides.model['constituent']]
+            loc_info['amps'] = my_tides.model['amplitude'].tolist()
+            loc_info['phase'] = my_tides.model['phase'].tolist()
+            #print(loc_info)
+            jpic = json.dumps(loc_info)
             #print(my_tides.model['constituents'])
             print(jpic, file=harmfile)
     

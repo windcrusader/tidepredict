@@ -102,13 +102,13 @@ def reconstruct_tide_model(tm_file):
     """
     tidemodel = json.loads(tm_file.read())
     constits = [constituent.__getattribute__("_"+cstr) 
-                for cstr in tidemodel[0]]
-    model = np.zeros(len(tidemodel[0]), dtype = Tide.dtype)
-    assert len(constits) == len(tidemodel[1]) == len(tidemodel[2]), \
+                for cstr in tidemodel['cons']]
+    model = np.zeros(len(tidemodel['cons']), dtype = Tide.dtype)
+    assert len(constits) == len(tidemodel['amps']) == len(tidemodel['phase']), \
            "model file arrays must be equal length"
     model['constituent'] = constits
-    model['amplitude'] = tidemodel[1]
-    model['phase'] = tidemodel[2]
+    model['amplitude'] = tidemodel['amps']
+    model['phase'] = tidemodel['phase']
     tide = Tide(model = model, radians = False)
     return tide
 
