@@ -1,7 +1,7 @@
 from tidepredict import constants, ftp_helpers
 import re
 
-def get_station_info(loc_code, ocean):
+def get_station_info(loc_code, ocean, station_dict):
     """returns info gathered about the station from the QA file
     """
     
@@ -13,7 +13,8 @@ def get_station_info(loc_code, ocean):
         meridian = re.search(r"Meridian: (\w*)", text).group(1)
     except IndexError:
         print("Could not find time meridian info in qa%s.dmt" %loc_code[1:])
-    return {"meridian":meridian}
+    #print(type(station_dict)
+    station_dict[loc_code] = {"meridian":meridian}
 
 def deg_2_decimal(latitude, longitude):
     """Converts degrees minutes and seconds into decimal degrees

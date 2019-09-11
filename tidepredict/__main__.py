@@ -4,16 +4,14 @@ from __future__ import print_function
 import numpy as np
 import sys
 import argparse
-from tidepredict import processdata
-from tidepredict import process_station_list
-from tidepredict import constants
-from tidepredict import constituent
-from tidepredict import process_station_info
+from tidepredict import (processdata, process_station_list, constants,
+constituent, process_station_info)
 from tidepredict.tide import Tide
 import pandas as pd
 import json
 import datetime
 import timezonefinder
+import pathlib
 
 __version__ = "0.2.0"
 
@@ -72,7 +70,7 @@ def process_args(args):
 
     #extract station data from stations df
     thestation = stations[stations.loc_name.str.contains(args.l)]
-    print(thestation)
+    #print(thestation)
     
     if thestation.empty:
         print("Station not found")
@@ -83,7 +81,8 @@ def process_args(args):
         sys.exit()
 
     loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
-    harmfilepath = constants.SAVEHARMLOCATION / (loc_code + ".json")
+    station_dict, harmfileloc = process_station_list.read_station_info_file()
+
     if args.harmgen is True:
         #get the last two years that data exists for
         lastyear = int(thestation.data_years.tolist()[0][-2:])
@@ -97,42 +96,38 @@ def process_args(args):
 
         my_tides = processdata.fit_model(datadict)
 
-        #get QA doc
-        loc_info = process_station_info.get_station_info(loc_code, ocean)
+        #get QA doc, returns a dict of dicts
+        process_station_info.get_station_info(loc_code, ocean, station_dict)
         #set location data version for compatibility
-        loc_info['version'] = __version__
+        station_dict[loc_code]['version'] = __version__
         lat, lon = process_station_info.deg_2_decimal(thestation.Lat.tolist()[0],
-                                           thestation.Lon.tolist()[0])                                   
-        loc_info['lat'] = lat
-        loc_info['lon'] = lon
+                                           thestation.Lon.tolist()[0])  
+        #write out the rest of the station information                                 
+        station_dict[loc_code]['lat'] = lat
+        station_dict[loc_code]['lon'] = lon
         tf = timezonefinder.TimezoneFinder(in_memory=True)
-        loc_info['tzone'] = tf.timezone_at(lng=lon, lat=lat)
-        loc_info['name'] = thestation.loc_name.tolist()[0]
-        loc_info['country'] = thestation.country.tolist()[0]
-        loc_info['contributor'] = thestation.Contributor.tolist()[0]
-        if not constants.SAVEHARMLOCATION.exists():
-            constants.SAVEHARMLOCATION.mkdir()
-    
-        with open(harmfilepath, "w+") as harmfile:
-            #print(my_tides)
-            #jpic = pickle.dumps(my_tides.model)
-            loc_info['cons'] = [item.name for item in my_tides.model['constituent']]
-            loc_info['amps'] = my_tides.model['amplitude'].tolist()
-            loc_info['phase'] = my_tides.model['phase'].tolist()
-            #print(loc_info)
-            jpic = json.dumps(loc_info)
-            #print(my_tides.model['constituents'])
-            print(jpic, file=harmfile)
+        station_dict[loc_code]['tzone'] = tf.timezone_at(lng=lon, lat=lat)
+        station_dict[loc_code]['name'] = thestation.loc_name.tolist()[0]
+        station_dict[loc_code]['country'] = thestation.country.tolist()[0]
+        station_dict[loc_code]['contributor'] = thestation.Contributor.tolist()[0]
+        station_dict[loc_code]['cons'] = [item.name for 
+                                          item in my_tides.model['constituent']]
+        station_dict[loc_code]['amps'] = my_tides.model['amplitude'].tolist()
+        station_dict[loc_code]['phase'] = my_tides.model['phase'].tolist()
+        
+        #if not constants.SAVEHARMLOCATION.exists():
+        #    constants.SAVEHARMLOCATION.mkdir()
+        #write to file.
+        harmfileloc.write_text(json.dumps(station_dict))
     
     #Try to get the saved harmonics constants from file.
     #Tide prediction using pre-generated constants is much faster than 
     #having to derive them again.
-    try:
-        with open(harmfilepath,"r") as harmfile:
-            #Reconstruct tide model from saved harmonics data
-            tide, stat_info = processdata.reconstruct_tide_model(harmfile)
-            #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
-    except FileNotFoundError:
+    station_dict = json.loads(harmfileloc.read_text())
+    #Reconstruct tide model from saved harmonics data
+    tide = processdata.reconstruct_tide_model(station_dict, loc_code)
+    #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
+    if tide is None:
         print("Harmonics data not found for %s" %args.l)
         print("Use option -harmgen to generate harmonics for this location")
         sys.exit()
@@ -163,7 +158,11 @@ def process_args(args):
         predictions = processdata.predict_plain(tide,
                                                 startdate=start,
                                                 enddate=end,
-                                                timezone = stat_info["tzone"])
+                                                timezone = station_dict[loc_code]['tzone'])
+        print("Tide forecast for %s, %s" %(station_dict[loc_code]['name'],
+                                           station_dict[loc_code]['country']))
+        print("Latitude:%5.2f Longitude:%5.2f" %(station_dict[loc_code]['lat'],
+                                           station_dict[loc_code]['lon']))                                   
         print(predictions)
     return predictions
     

@@ -97,22 +97,26 @@ def predict_plain(tide, startdate, enddate, timezone=None):
     return extrema
 
 
-def reconstruct_tide_model(tm_file):
+def reconstruct_tide_model(station_dict, loc_code):
     """
-    Method to reconstruct the tide model from the json model file
+    Method to reconstruct the tide model from the dictionary of all stations
     input: tm_file, which is the open json file
     """
-    tidemodel = json.loads(tm_file.read())
-    constits = [constituent.__getattribute__("_"+cstr) 
-                for cstr in tidemodel['cons']]
-    model = np.zeros(len(tidemodel['cons']), dtype = Tide.dtype)
-    assert len(constits) == len(tidemodel['amps']) == len(tidemodel['phase']), \
+    try:
+        constits = [constituent.__getattribute__("_"+cstr) 
+                for cstr in station_dict[loc_code]['cons']]
+    except KeyError:
+        return None
+
+    model = np.zeros(len(station_dict[loc_code]['cons']), dtype = Tide.dtype)
+    assert len(constits) == len(station_dict[loc_code]['amps']) \
+            == len(station_dict[loc_code]['phase']), \
            "model file arrays must be equal length"
     model['constituent'] = constits
-    model['amplitude'] = tidemodel['amps']
-    model['phase'] = tidemodel['phase']
+    model['amplitude'] = station_dict[loc_code]['amps']
+    model['phase'] = station_dict[loc_code]['phase']
     tide = Tide(model = model, radians = False)
-    return tide, tidemodel
+    return tide
 
 def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     """Processes university of Hawaii data into a Python dictionary.

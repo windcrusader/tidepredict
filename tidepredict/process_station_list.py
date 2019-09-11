@@ -5,8 +5,9 @@ if the user specified string can be matched to a station
 from tidepredict import ftp_helpers
 import pandas as pd
 from io import StringIO
-import os
 from tidepredict import constants
+import json
+import pathlib
 
 def get_station_files():
     """Get bytes IO objects from each of the station list files
@@ -19,6 +20,9 @@ def get_station_files():
     return pacific, indian, atlantic
 
 def create_station_dataframe():
+    """Creates a pandas dataframe from the csv list of all stations
+    downloaded from the uhrqds.
+    """
     files = get_station_files()
     combinedlst = ""
     for item in files:
@@ -39,13 +43,39 @@ def create_station_dataframe():
                                    "CI", "Contributor"])
 
     #dump to file
-    if not os.path.exists(constants.savefilelocation):
-        os.mkdir(constants.savefilelocation)
+    if not constants.SAVEFILELOCATION:
+        constants.SAVEFILELOCATION.mkdir()
     else:    
-        stat_df.to_csv(os.path.join(constants.savefilelocation,
-                                    constants.stationfile))
+        stat_df.to_csv(constants.STATIONFILE)
     return stat_df
     
+def read_station_info_file():
+    """Reads the station info json file which contains downloaded and 
+    processed harmonics model data for each station that has had
+    -harmgen run
+    """
+    if not constants.SAVEHARMLOCATION.exists():
+        constants.SAVEHARMLOCATION.mkdir()
+
+    harmfileloc = constants.SAVEHARMLOCATION / "stations_harms.json"
+    if not harmfileloc.exists():
+        #create the file
+        harmfileloc.touch()
+        adict = {}
+        harmfileloc.write_text(json.dumps(adict))
+    #load station harmonics data
+    return json.loads(harmfileloc.read_text()), harmfileloc
+
+def write_station_info_file(harmfileloc, stationdict):
+    harmfileloc.write_text(json.dumps(stationdict))
+
+
+
+
+    
+
+
+
 
     
 
