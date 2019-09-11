@@ -13,6 +13,7 @@ from tidepredict.tide import Tide
 import pandas as pd
 import json
 import datetime
+import timezonefinder
 
 __version__ = "0.2.0"
 
@@ -100,8 +101,12 @@ def process_args(args):
         loc_info = process_station_info.get_station_info(loc_code, ocean)
         #set location data version for compatibility
         loc_info['version'] = __version__
-        loc_info['lat'] = thestation.Lat.tolist()[0]
-        loc_info['lon'] = thestation.Lon.tolist()[0]
+        lat, lon = process_station_info.deg_2_decimal(thestation.Lat.tolist()[0],
+                                           thestation.Lon.tolist()[0])                                   
+        loc_info['lat'] = lat
+        loc_info['lon'] = lon
+        tf = timezonefinder.TimezoneFinder(in_memory=True)
+        loc_info['tzone'] = tf.timezone_at(lng=lon, lat=lat)
         loc_info['name'] = thestation.loc_name.tolist()[0]
         loc_info['country'] = thestation.country.tolist()[0]
         loc_info['contributor'] = thestation.Contributor.tolist()[0]
@@ -125,7 +130,7 @@ def process_args(args):
     try:
         with open(harmfilepath,"r") as harmfile:
             #Reconstruct tide model from saved harmonics data
-            tide = processdata.reconstruct_tide_model(harmfile)
+            tide, stat_info = processdata.reconstruct_tide_model(harmfile)
             #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
     except FileNotFoundError:
         print("Harmonics data not found for %s" %args.l)
@@ -157,7 +162,8 @@ def process_args(args):
     if args.m == "p":
         predictions = processdata.predict_plain(tide,
                                                 startdate=start,
-                                                enddate=end)
+                                                enddate=end,
+                                                timezone = stat_info["tzone"])
         print(predictions)
     return predictions
     

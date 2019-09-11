@@ -31,5 +31,6 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     python_requires=">=2.7",
-    install_requires=["numpy","matplotlib","pandas","jinja2","scipy"],
+    install_requires=["numpy","matplotlib","pandas","jinja2","scipy",
+                      "timezonefinder"],
 )

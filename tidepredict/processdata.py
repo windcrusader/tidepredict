@@ -54,7 +54,7 @@ def get_data_url(ocean = "pacific"):
         sys.exit()
     return ftpurl  
 
-def predict_plain(tide, startdate, enddate):
+def predict_plain(tide, startdate, enddate, timezone=None):
     """
     Generates tide predictions similar to Xtide's plain mode.
     startdate for prediction (Python datetime)
@@ -63,8 +63,10 @@ def predict_plain(tide, startdate, enddate):
     """
     #todo pass the function the requested timezone based on the location
     #in the harmonics file
-
-    tz = pytz.timezone("Pacific/Auckland")
+    if timezone is not None:
+        tz = pytz.timezone(timezone)
+    else:
+        tz = pytz.utc
     #print(tz)
     utc = pytz.utc
     #print(utc)
@@ -110,7 +112,7 @@ def reconstruct_tide_model(tm_file):
     model['amplitude'] = tidemodel['amps']
     model['phase'] = tidemodel['phase']
     tide = Tide(model = model, radians = False)
-    return tide
+    return tide, tidemodel
 
 def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
     """Processes university of Hawaii data into a Python dictionary.

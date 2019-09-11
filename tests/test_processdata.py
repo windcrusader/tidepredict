@@ -3,6 +3,7 @@ import pytest
 from tidepredict import ftp_helpers
 from tidepredict import __main__
 import argparse
+from tidepredict import process_station_info
 
 def test_get_data_url():
     assert processdata.get_data_url("indian") == "uhslc/rqds/indian"
@@ -24,5 +25,9 @@ def test_prediction():
                        "2019-10-01 0050  0.23 Low Tide",
                        "2019-10-01 0702  2.64 High Tide"]) + "\n"
     assert __main__.process_args(args) == output
+
+def test_deg_2_dec():
+    assert process_station_info.deg_2_decimal("02-45N", "072-21E") == (2.75, 72.35)
+    assert process_station_info.deg_2_decimal("02-45S", "072-21W") == (-2.75, -72.35)
 
 
