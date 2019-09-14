@@ -13,8 +13,9 @@ import datetime
 import timezonefinder
 import pathlib
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
+#Setup command line arguments below. Should be self-explanatory
 parser = argparse.ArgumentParser(description=
                                 'tidepredict: a tide prediction module.')
 parser.add_argument('-harmgen',
@@ -35,8 +36,7 @@ parser.add_argument('-l',
                     action="store",
                     help="""Location to search the database for or to
                             generate harmonic constituents for.""",
-                    metavar="Location",
-                    required = True)  
+                    metavar="Location")  
 
 parser.add_argument('-r',
                     action="store_true",
@@ -52,11 +52,15 @@ parser.add_argument('-e',
                     help = "end time for predictions",
                     metavar = "YYYY-MM-DD HH:MM")
 
-
     #todo add the rest of the xtide arguments once I've implemented the above
     # correctly.   
 
 def process_args(args):
+
+    #check we got at least one of location or list
+    if args.l == None and args.m != "l":
+        parser.error('Must enter a location or use list option [-m l]')
+
     #First try to read in the location list
     try:
         stations = pd.read_csv(constants.STATIONFILE)
@@ -68,103 +72,110 @@ def process_args(args):
         print("Refreshing stations list from online source.")
         stations = process_station_list.create_station_dataframe()
 
-    #extract station data from stations df
-    thestation = stations[stations.loc_name.str.contains(args.l)]
-    #print(thestation)
-    
-    if thestation.empty:
-        print("Station not found")
-        sys.exit()
-    if len(thestation) > 1:
-        print("Station name ambiguous, the following stations were found:")
-        print(thestation)
-        sys.exit()
-
-    loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
-    station_dict, harmfileloc = process_station_list.read_station_info_file()
-
-    if args.harmgen is True:
-        #get the last two years that data exists for
-        lastyear = int(thestation.data_years.tolist()[0][-2:])
-        years = list(range(lastyear-1,lastyear+1))
-        #create data url
-        ocean = constants.ocean_dict[thestation.oc_idx.tolist()[0][0]]
-        ftpurl = processdata.get_data_url(ocean = ocean)
-        datadict = processdata.process_unhw_data(ftpurl = ftpurl,
-                                                  years=years,
-                                                  loc_code = loc_code)
-
-        my_tides = processdata.fit_model(datadict)
-
-        #get QA doc, returns a dict of dicts
-        process_station_info.get_station_info(loc_code, ocean, station_dict)
-        #set location data version for compatibility
-        station_dict[loc_code]['version'] = __version__
-        lat, lon = process_station_info.deg_2_decimal(thestation.Lat.tolist()[0],
-                                           thestation.Lon.tolist()[0])  
-        #write out the rest of the station information                                 
-        station_dict[loc_code]['lat'] = lat
-        station_dict[loc_code]['lon'] = lon
-        tf = timezonefinder.TimezoneFinder(in_memory=True)
-        station_dict[loc_code]['tzone'] = tf.timezone_at(lng=lon, lat=lat)
-        station_dict[loc_code]['name'] = thestation.loc_name.tolist()[0]
-        station_dict[loc_code]['country'] = thestation.country.tolist()[0]
-        station_dict[loc_code]['contributor'] = thestation.Contributor.tolist()[0]
-        station_dict[loc_code]['cons'] = [item.name for 
-                                          item in my_tides.model['constituent']]
-        station_dict[loc_code]['amps'] = my_tides.model['amplitude'].tolist()
-        station_dict[loc_code]['phase'] = my_tides.model['phase'].tolist()
-        
-        #if not constants.SAVEHARMLOCATION.exists():
-        #    constants.SAVEHARMLOCATION.mkdir()
-        #write to file.
-        harmfileloc.write_text(json.dumps(station_dict))
-    
-    #Try to get the saved harmonics constants from file.
-    #Tide prediction using pre-generated constants is much faster than 
-    #having to derive them again.
-    station_dict = json.loads(harmfileloc.read_text())
-    #Reconstruct tide model from saved harmonics data
-    tide = processdata.reconstruct_tide_model(station_dict, loc_code)
-    #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
-    if tide is None:
-        print("Harmonics data not found for %s" %args.l)
-        print("Use option -harmgen to generate harmonics for this location")
-        sys.exit()
-
-    #check validity of start time
-    if args.b is not None:
-        try:
-            start = datetime.datetime.strptime(args.b,"%Y-%m-%d %H:%M")
-        except ValueError:
-            print("Start time format does not match expected YYYY-MM-DD HH:MM")
+    #Run some checks on the requested station
+    if args.l != None:    #extract station data from stations df
+        thestation = stations[stations.loc_name.str.contains(args.l)]
+        #print(thestation)
+        if thestation.empty:
+            print("Station not found")
             sys.exit()
-    else:
-        start = datetime.datetime.today()
-
-    #check validity of end time
-    if args.e is not None:
-        try:
-            end = datetime.datetime.strptime(args.e,"%Y-%m-%d %H:%M")
-        except ValueError:
-            print("End time format does not match expected YYYY-MM-DD HH:MM")
+        if len(thestation) > 1:
+            print("Station name ambiguous, the following stations were found:")
+            print(thestation)
             sys.exit()
-    else:
-        end = start + datetime.timedelta(days=3)
-    
 
-    #output tide predictions
+        loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
+        station_dict, harmfileloc = process_station_list.read_station_info_file()
+
+        if args.harmgen is True:
+            #get the last two years that data exists for
+            lastyear = int(thestation.data_years.tolist()[0][-2:])
+            years = list(range(lastyear-1,lastyear+1))
+            #create data url
+            ocean = constants.ocean_dict[thestation.oc_idx.tolist()[0][0]]
+            ftpurl = processdata.get_data_url(ocean = ocean)
+            datadict = processdata.process_unhw_data(ftpurl = ftpurl,
+                                                    years=years,
+                                                    loc_code = loc_code)
+
+            my_tides = processdata.fit_model(datadict)
+
+            #get QA doc, returns a dict of dicts
+            process_station_info.get_station_info(loc_code, ocean, station_dict)
+            #set location data version for compatibility
+            station_dict[loc_code]['version'] = __version__
+            lat, lon = process_station_info.deg_2_decimal(thestation.Lat.tolist()[0],
+                                            thestation.Lon.tolist()[0])  
+            #write out the rest of the station information                                 
+            station_dict[loc_code]['lat'] = lat
+            station_dict[loc_code]['lon'] = lon
+            tf = timezonefinder.TimezoneFinder(in_memory=True)
+            station_dict[loc_code]['tzone'] = tf.timezone_at(lng=lon, lat=lat)
+            station_dict[loc_code]['name'] = thestation.loc_name.tolist()[0]
+            station_dict[loc_code]['country'] = thestation.country.tolist()[0]
+            station_dict[loc_code]['contributor'] = thestation.Contributor.tolist()[0]
+            station_dict[loc_code]['cons'] = [item.name for 
+                                            item in my_tides.model['constituent']]
+            station_dict[loc_code]['amps'] = my_tides.model['amplitude'].tolist()
+            station_dict[loc_code]['phase'] = my_tides.model['phase'].tolist()
+            
+            #if not constants.SAVEHARMLOCATION.exists():
+            #    constants.SAVEHARMLOCATION.mkdir()
+            #write to file.
+            harmfileloc.write_text(json.dumps(station_dict))
+    
+        #Try to get the saved harmonics constants from file.
+        #Tide prediction using pre-generated constants is much faster than 
+        #having to derive them again.
+        station_dict = json.loads(harmfileloc.read_text())
+        #Reconstruct tide model from saved harmonics data
+        tide = processdata.reconstruct_tide_model(station_dict, loc_code)
+        #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
+        if tide is None:
+            print("Harmonics data not found for %s" %args.l)
+            print("Use option -harmgen to generate harmonics for this location")
+            sys.exit()
+
+        #check validity of start time
+        if args.b is not None:
+            try:
+                start = datetime.datetime.strptime(args.b,"%Y-%m-%d %H:%M")
+            except ValueError:
+                print("Start time format does not match expected YYYY-MM-DD HH:MM")
+                sys.exit()
+        else:
+            start = datetime.datetime.today()
+
+        #check validity of end time
+        if args.e is not None:
+            try:
+                end = datetime.datetime.strptime(args.e,"%Y-%m-%d %H:%M")
+            except ValueError:
+                print("End time format does not match expected YYYY-MM-DD HH:MM")
+                sys.exit()
+        else:
+            end = start + datetime.timedelta(days=3)
+    
+    #output tide predictions depending on options specified.
     if args.m == "p":
         predictions = processdata.predict_plain(tide,
                                                 startdate=start,
                                                 enddate=end,
                                                 timezone = station_dict[loc_code]['tzone'])
         print("Tide forecast for %s, %s" %(station_dict[loc_code]['name'],
-                                           station_dict[loc_code]['country']))
+                                        station_dict[loc_code]['country']))
         print("Latitude:%5.2f Longitude:%5.2f" %(station_dict[loc_code]['lat'],
-                                           station_dict[loc_code]['lon']))                                   
+                                        station_dict[loc_code]['lon']))                                   
         print(predictions)
-    return predictions
+        return predictions
+
+    elif args.m == "l":
+        #list all available stations name and country
+        for name, country, lat, lon in zip(stations['loc_name'], 
+                                stations['country'],
+                                stations['Lat'],
+                                stations['Lon']):
+            print("%18s %16s %8s %8s"%(name, country, lat, lon))
     
 if __name__ == "__main__":
     args = parser.parse_args()
