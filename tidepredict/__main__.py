@@ -32,6 +32,16 @@ parser.add_argument('-m',
                     default = "p",
                     choices=['a', 'b', 'c', 'C','g', 'k', 'l', 'm', 'p',
                             'r', 's'])
+
+parser.add_argument('-f',
+                    action="store",
+                    help="""Mode:
+                            Specify format to be csv, html, PNG, text, or
+                            SVG.
+                            The default is text.""",
+                    default = "t",
+                    choices=['c', 'h', 'p', 't','v'])
+
 parser.add_argument('-l',
                     action="store",
                     help="""Location to search the database for or to
@@ -159,15 +169,12 @@ def process_args(args):
     #output tide predictions depending on options specified.
     if args.m == "p":
         predictions = processdata.predict_plain(tide,
+                                                station_dict[loc_code],
+                                                format = args.f,
                                                 startdate=start,
-                                                enddate=end,
-                                                timezone = station_dict[loc_code]['tzone'])
-        print("Tide forecast for %s, %s" %(station_dict[loc_code]['name'],
-                                        station_dict[loc_code]['country']))
-        print("Latitude:%5.2f Longitude:%5.2f" %(station_dict[loc_code]['lat'],
-                                        station_dict[loc_code]['lon']))                                   
+                                                enddate=end)
         print(predictions)
-        return predictions
+        return predictions    
 
     elif args.m == "l":
         #list all available stations name and country

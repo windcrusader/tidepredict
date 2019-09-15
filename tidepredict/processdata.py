@@ -28,10 +28,7 @@ from tidepredict import constants
 import json
 from tidepredict import constituent
 import dateutil
-if sys.version_info[0] < 3:
-    import pathlib2 as pathlib
-else:
-    import pathlib
+import pathlib
 
 def get_data_url(ocean = "pacific"):
     """returns the data file url for the uhslc server for a specific
@@ -51,26 +48,32 @@ def get_data_url(ocean = "pacific"):
         ftpurl = "uhslc/rqds/indian"
     else:
         raise Exception("Ocean must be one of: Indian, Pacific, or Atlantic")
-        sys.exit()
+        sys.exit(1)
     return ftpurl  
 
-def predict_plain(tide, startdate, enddate, timezone=None):
+def predict_plain(tide, station_dict, format, startdate, enddate):
     """
     Generates tide predictions similar to Xtide's plain mode.
     startdate for prediction (Python datetime)
     enddate:  enddate for prediction
     tide: the tide model to use
     """
-    #todo pass the function the requested timezone based on the location
-    #in the harmonics file
-    if timezone is not None:
-        tz = pytz.timezone(timezone)
+    
+    if station_dict['tzone'] is not None:
+        tz = pytz.timezone(station_dict['tzone'])
     else:
         tz = pytz.utc
     #print(tz)
     utc = pytz.utc
     #print(utc)
-    extrema = "All times in TZ: %s\n" %(tz)
+    if format == "t":
+        extrema = "Tide forecast for %s, %s\n" %(station_dict['name'],
+                                        station_dict['country'])
+        extrema += "Latitude:%5.2f Longitude:%5.2f\n" %(station_dict['lat'],
+                                        station_dict['lon'])                                                                
+    else:
+        extrema = ""
+
     start = tz.localize(startdate)
     end = tz.localize(enddate)
     #print(start)
@@ -86,8 +89,23 @@ def predict_plain(tide, startdate, enddate, timezone=None):
         ##Round the time to the nearest minute
         time = time + datetime.timedelta(minutes=time.second > 30)
         height = e[1]
-        extrema += time.strftime("%Y-%m-%d %H%M")
-        extrema += " %5.2f" %height
+        if format == "c":
+            #csv so append station name
+            extrema += station_dict['name'] + ","
+            extrema += time.strftime("%Y-%m-%d,%H%M")
+        else:
+            extrema += time.strftime("%Y-%m-%d %H%M")
+        
+        if format == "c":
+            extrema += ",%s," %tz
+        else:
+            extrema += " %s" %tz
+
+        extrema += "%5.2f" %height   
+
+        if format == "c":
+            extrema += ","
+        
         if e[2] == "L":
             extrema += " Low Tide"
         else:
