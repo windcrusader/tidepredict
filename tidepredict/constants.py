@@ -2,11 +2,11 @@
 Constants used throughout the module
 """
 import sys
-if sys.version_info[0] < 3:
-    import pathlib2 as pathlib
-else:
-    import pathlib
+import pathlib
 
+#default time spans
+GRAPHSPAN = 2
+TEXTSPAN = 3
 #home location
 HOME = pathlib.Path.home()
 #folder to store tidepredict files

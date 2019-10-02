@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import argparse
 from tidepredict import (processdata, process_station_list, constants,
-constituent, process_station_info)
+constituent, process_station_info, plotpng, timefunc)
 from tidepredict.tide import Tide
 import pandas as pd
 import json
@@ -146,35 +146,22 @@ def process_args(args):
             print("Use option -harmgen to generate harmonics for this location")
             sys.exit()
 
+        #process start and end time arguments
         #check validity of start time
-        if args.b is not None:
-            try:
-                start = datetime.datetime.strptime(args.b,"%Y-%m-%d %H:%M")
-            except ValueError:
-                print("Start time format does not match expected YYYY-MM-DD HH:MM")
-                sys.exit()
-        else:
-            start = datetime.datetime.today()
-
-        #check validity of end time
-        if args.e is not None:
-            try:
-                end = datetime.datetime.strptime(args.e,"%Y-%m-%d %H:%M")
-            except ValueError:
-                print("End time format does not match expected YYYY-MM-DD HH:MM")
-                sys.exit()
-        else:
-            end = start + datetime.timedelta(days=3)
+        timeobj = timefunc.Tidetime(st_time = args.b,
+                                    en_time = args.e,
+                                    station_tz = station_dict[loc_code]['tzone'])
+        
     
     #output tide predictions depending on options specified.
-    if args.m == "p":
+    if args.m == "p" and (args.f == "t" or args.f == "c"):
+        #Text output
         predictions = processdata.predict_plain(tide,
                                                 station_dict[loc_code],
-                                                format = args.f,
-                                                startdate=start,
-                                                enddate=end)
+                                                args.f,
+                                                timeobj)
         print(predictions)
-        return predictions    
+        return predictions   
 
     elif args.m == "l":
         #list all available stations name and country
@@ -183,6 +170,13 @@ def process_args(args):
                                 stations['Lat'],
                                 stations['Lon']):
             print("%18s %16s %8s %8s"%(name, country, lat, lon))
+
+    if args.f == "p":
+        #PNG output
+        png = plotpng.Plotpng(tide,
+                      station_dict[loc_code],
+                      args.f,
+                      timeobj)
     
 if __name__ == "__main__":
     args = parser.parse_args()

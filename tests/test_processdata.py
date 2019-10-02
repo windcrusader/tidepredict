@@ -4,6 +4,22 @@ from tidepredict import ftp_helpers
 from tidepredict import __main__
 import argparse
 from tidepredict import process_station_info
+from tidepredict import timefunc
+import pytz
+import datetime
+
+def test_time():
+    fmt = "%Y-%m-%d %H:%M"
+    timeobj = timefunc.Tidetime(st_time = "2019-10-02 13:00",
+                                en_time = "2019-10-03 16:00",
+                                station_tz = "Pacific/Auckland")
+
+    assert timeobj.st_utc.strftime(fmt) == "2019-10-02 00:00"
+    assert timeobj.en_utc.strftime(fmt) == "2019-10-03 03:00"
+
+        
+    
+
 
 def test_get_data_url():
     assert processdata.get_data_url("indian") == "uhslc/rqds/indian"

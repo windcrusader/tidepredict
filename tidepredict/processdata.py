@@ -51,7 +51,7 @@ def get_data_url(ocean = "pacific"):
         sys.exit(1)
     return ftpurl  
 
-def predict_plain(tide, station_dict, format, startdate, enddate):
+def predict_plain(tide, station_dict, format, timeobj):
     """
     Generates tide predictions similar to Xtide's plain mode.
     startdate for prediction (Python datetime)
@@ -59,13 +59,6 @@ def predict_plain(tide, station_dict, format, startdate, enddate):
     tide: the tide model to use
     """
     
-    if station_dict['tzone'] is not None:
-        tz = pytz.timezone(station_dict['tzone'])
-    else:
-        tz = pytz.utc
-    #print(tz)
-    utc = pytz.utc
-    #print(utc)
     if format == "t":
         extrema = "Tide forecast for %s, %s\n" %(station_dict['name'],
                                         station_dict['country'])
@@ -74,20 +67,13 @@ def predict_plain(tide, station_dict, format, startdate, enddate):
     else:
         extrema = ""
 
-    start = tz.localize(startdate)
-    end = tz.localize(enddate)
-    #print(start)
-    #print(end)
-    startUTC = utc.normalize(start.astimezone(utc))
-    endUTC = utc.normalize(end.astimezone(utc))
-    extremaUTC = tide.extrema(startUTC, endUTC)
+    extremaUTC = tide.extrema(timeobj.st_utc, timeobj.en_utc)
     #print(extremaUTC)
     
     for e in extremaUTC:
         #print(e)
-        time = tz.normalize(e[0].astimezone(tz))
-        ##Round the time to the nearest minute
-        time = time + datetime.timedelta(minutes=time.second > 30)
+        #get localised time
+        time = timeobj.localise(e[0])
         height = e[1]
         if format == "c":
             #csv so append station name
@@ -97,9 +83,9 @@ def predict_plain(tide, station_dict, format, startdate, enddate):
             extrema += time.strftime("%Y-%m-%d %H%M")
         
         if format == "c":
-            extrema += ",%s," %tz
+            extrema += ",%s," %timeobj.tz
         else:
-            extrema += " %s" %tz
+            extrema += " %s" %timeobj.tz
 
         extrema += "%5.2f" %height   
 
@@ -202,23 +188,6 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
                 datalist.append([datakey, data])
         fdat.close()
     return datalist
-
-def plot_data(datalist):
-    """Plots the timestamp tide heights.
-
-    This is useful for validating data
-    """     
-    print("Plotting tide data")
-    df = pd.DataFrame(datalist, columns=['Date', 'DateValue'])
-    #dump to file
-    mydir = pathlib.Path().home()
-    df.to_csv(mydir / "tidedata.csv")
-    print(df.head())
-    df.plot()
-    print("Close plot window to continue")
-    plt.show()
-    
-    
 
 def output_to_file(datalist):
     """Outputs the processed datadict to a textfile
