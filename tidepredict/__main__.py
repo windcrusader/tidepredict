@@ -18,7 +18,7 @@ __version__ = "0.3.0"
 #Setup command line arguments below. Should be self-explanatory
 parser = argparse.ArgumentParser(description=
                                 'tidepredict: a tide prediction module.')
-parser.add_argument('-harmgen',
+parser.add_argument('-genharm',
                     action="store_true",
                     help="""Generic harmonics constants from University of 
                             Hawaii research quality data""")
@@ -97,7 +97,7 @@ def process_args(args):
         loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
         station_dict, harmfileloc = process_station_list.read_station_info_file()
 
-        if args.harmgen is True:
+        if args.genharm is True:
             #get the last two years that data exists for
             lastyear = int(thestation.data_years.tolist()[0][-2:])
             years = list(range(lastyear-1,lastyear+1))
@@ -143,7 +143,7 @@ def process_args(args):
         #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
         if tide is None:
             print("Harmonics data not found for %s" %args.l)
-            print("Use option -harmgen to generate harmonics for this location")
+            print("Use option -genharm to generate harmonics for this location")
             sys.exit()
 
         #process start and end time arguments

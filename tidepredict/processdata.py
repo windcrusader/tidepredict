@@ -169,9 +169,10 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
               continue
             #print(line.decode("UTF-8"))
             linedc = line.decode("UTF-8")
-            #print(linedc)
-            tideheights = linedc.split()[3:15]
-            dateraw = linedc.split()[2]
+            #tide height data starts at column 22 (py index = 21)
+            tideheights = linedc[21:].split()
+            #date data starts at column 12(11) ends at 20 
+            dateraw = linedc[11:20]
             dateactual = ( dateraw[:4] + "-" + dateraw[4:6] + "-" + dateraw[6:8]
                         )
                 
