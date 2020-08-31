@@ -44,8 +44,8 @@ def create_station_dataframe():
 
     #dump to file
     if not constants.SAVEFILELOCATION:
-        constants.SAVEFILELOCATION.mkdir()
-    else:    
+        constants.SAVEFILELOCATION.mkdir(parents=True)
+    else:
         stat_df.to_csv(constants.STATIONFILE)
     return stat_df
     
@@ -55,7 +55,7 @@ def read_station_info_file():
     -harmgen run
     """
     if not constants.SAVEHARMLOCATION.exists():
-        constants.SAVEHARMLOCATION.mkdir()
+        constants.SAVEHARMLOCATION.mkdir(parents=True)
 
     harmfileloc = constants.SAVEHARMLOCATION / "stations_harms.json"
     if not harmfileloc.exists():
