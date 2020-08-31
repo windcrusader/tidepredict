@@ -28,10 +28,7 @@ from tidepredict import constants
 import json
 from tidepredict import constituent
 import dateutil
-if sys.version_info[0] < 3:
-    import pathlib2 as pathlib
-else:
-    import pathlib
+import pathlib
 
 def get_data_url(ocean = "pacific"):
     """returns the data file url for the uhslc server for a specific
@@ -51,43 +48,50 @@ def get_data_url(ocean = "pacific"):
         ftpurl = "uhslc/rqds/indian"
     else:
         raise Exception("Ocean must be one of: Indian, Pacific, or Atlantic")
-        sys.exit()
+        sys.exit(1)
     return ftpurl  
 
-def predict_plain(tide, startdate, enddate, timezone=None):
+def predict_plain(tide, station_dict, format, timeobj):
     """
     Generates tide predictions similar to Xtide's plain mode.
     startdate for prediction (Python datetime)
     enddate:  enddate for prediction
     tide: the tide model to use
     """
-    #todo pass the function the requested timezone based on the location
-    #in the harmonics file
-    if timezone is not None:
-        tz = pytz.timezone(timezone)
+    
+    if format == "t":
+        extrema = "Tide forecast for %s, %s\n" %(station_dict['name'],
+                                        station_dict['country'])
+        extrema += "Latitude:%5.2f Longitude:%5.2f\n" %(station_dict['lat'],
+                                        station_dict['lon'])                                                                
     else:
-        tz = pytz.utc
-    #print(tz)
-    utc = pytz.utc
-    #print(utc)
-    extrema = "All times in TZ: %s\n" %(tz)
-    start = tz.localize(startdate)
-    end = tz.localize(enddate)
-    #print(start)
-    #print(end)
-    startUTC = utc.normalize(start.astimezone(utc))
-    endUTC = utc.normalize(end.astimezone(utc))
-    extremaUTC = tide.extrema(startUTC, endUTC)
+        extrema = ""
+
+    extremaUTC = tide.extrema(timeobj.st_utc, timeobj.en_utc)
     #print(extremaUTC)
     
     for e in extremaUTC:
         #print(e)
-        time = tz.normalize(e[0].astimezone(tz))
-        ##Round the time to the nearest minute
-        time = time + datetime.timedelta(minutes=time.second > 30)
+        #get localised time
+        time = timeobj.localise(e[0])
         height = e[1]
-        extrema += time.strftime("%Y-%m-%d %H%M")
-        extrema += " %5.2f" %height
+        if format == "c":
+            #csv so append station name
+            extrema += station_dict['name'] + ","
+            extrema += time.strftime("%Y-%m-%d,%H%M")
+        else:
+            extrema += time.strftime("%Y-%m-%d %H%M")
+        
+        if format == "c":
+            extrema += ",%s," %timeobj.tz
+        else:
+            extrema += " %s" %timeobj.tz
+
+        extrema += "%5.2f" %height   
+
+        if format == "c":
+            extrema += ","
+        
         if e[2] == "L":
             extrema += " Low Tide"
         else:
@@ -165,9 +169,10 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
               continue
             #print(line.decode("UTF-8"))
             linedc = line.decode("UTF-8")
-            #print(linedc)
-            tideheights = linedc.split()[3:15]
-            dateraw = linedc.split()[2]
+            #tide height data starts at column 22 (py index = 21)
+            tideheights = linedc[21:].split()
+            #date data starts at column 12(11) ends at 20 
+            dateraw = linedc[11:20]
             dateactual = ( dateraw[:4] + "-" + dateraw[4:6] + "-" + dateraw[6:8]
                         )
                 
@@ -184,23 +189,6 @@ def process_unhw_data(ftpurl, years = [15,16], loc_code = "h551a"):
                 datalist.append([datakey, data])
         fdat.close()
     return datalist
-
-def plot_data(datalist):
-    """Plots the timestamp tide heights.
-
-    This is useful for validating data
-    """     
-    print("Plotting tide data")
-    df = pd.DataFrame(datalist, columns=['Date', 'DateValue'])
-    #dump to file
-    mydir = pathlib.Path().home()
-    df.to_csv(mydir / "tidedata.csv")
-    print(df.head())
-    df.plot()
-    print("Close plot window to continue")
-    plt.show()
-    
-    
 
 def output_to_file(datalist):
     """Outputs the processed datadict to a textfile

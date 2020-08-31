@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import argparse
 from tidepredict import (processdata, process_station_list, constants,
-constituent, process_station_info)
+constituent, process_station_info, plotpng, timefunc)
 from tidepredict.tide import Tide
 import pandas as pd
 import json
@@ -18,7 +18,7 @@ __version__ = "0.3.0"
 #Setup command line arguments below. Should be self-explanatory
 parser = argparse.ArgumentParser(description=
                                 'tidepredict: a tide prediction module.')
-parser.add_argument('-harmgen',
+parser.add_argument('-genharm',
                     action="store_true",
                     help="""Generic harmonics constants from University of 
                             Hawaii research quality data""")
@@ -32,6 +32,16 @@ parser.add_argument('-m',
                     default = "p",
                     choices=['a', 'b', 'c', 'C','g', 'k', 'l', 'm', 'p',
                             'r', 's'])
+
+parser.add_argument('-f',
+                    action="store",
+                    help="""Mode:
+                            Specify format to be csv, html, PNG, text, or
+                            SVG.
+                            The default is text.""",
+                    default = "t",
+                    choices=['c', 'h', 'p', 't','v'])
+
 parser.add_argument('-l',
                     action="store",
                     help="""Location to search the database for or to
@@ -87,7 +97,7 @@ def process_args(args):
         loc_code = "h" + thestation.stat_idx.tolist()[0].lower()
         station_dict, harmfileloc = process_station_list.read_station_info_file()
 
-        if args.harmgen is True:
+        if args.genharm is True:
             #get the last two years that data exists for
             lastyear = int(thestation.data_years.tolist()[0][-2:])
             years = list(range(lastyear-1,lastyear+1))
@@ -133,41 +143,25 @@ def process_args(args):
         #print (tide.at([datetime(2019,1,1,0,0,0), datetime(2019,1,1,6,0,0)]))
         if tide is None:
             print("Harmonics data not found for %s" %args.l)
-            print("Use option -harmgen to generate harmonics for this location")
+            print("Use option -genharm to generate harmonics for this location")
             sys.exit()
 
+        #process start and end time arguments
         #check validity of start time
-        if args.b is not None:
-            try:
-                start = datetime.datetime.strptime(args.b,"%Y-%m-%d %H:%M")
-            except ValueError:
-                print("Start time format does not match expected YYYY-MM-DD HH:MM")
-                sys.exit()
-        else:
-            start = datetime.datetime.today()
-
-        #check validity of end time
-        if args.e is not None:
-            try:
-                end = datetime.datetime.strptime(args.e,"%Y-%m-%d %H:%M")
-            except ValueError:
-                print("End time format does not match expected YYYY-MM-DD HH:MM")
-                sys.exit()
-        else:
-            end = start + datetime.timedelta(days=3)
+        timeobj = timefunc.Tidetime(st_time = args.b,
+                                    en_time = args.e,
+                                    station_tz = station_dict[loc_code]['tzone'])
+        
     
     #output tide predictions depending on options specified.
-    if args.m == "p":
+    if args.m == "p" and (args.f == "t" or args.f == "c"):
+        #Text output
         predictions = processdata.predict_plain(tide,
-                                                startdate=start,
-                                                enddate=end,
-                                                timezone = station_dict[loc_code]['tzone'])
-        print("Tide forecast for %s, %s" %(station_dict[loc_code]['name'],
-                                        station_dict[loc_code]['country']))
-        print("Latitude:%5.2f Longitude:%5.2f" %(station_dict[loc_code]['lat'],
-                                        station_dict[loc_code]['lon']))                                   
+                                                station_dict[loc_code],
+                                                args.f,
+                                                timeobj)
         print(predictions)
-        return predictions
+        return predictions   
 
     elif args.m == "l":
         #list all available stations name and country
@@ -176,6 +170,13 @@ def process_args(args):
                                 stations['Lat'],
                                 stations['Lon']):
             print("%18s %16s %8s %8s"%(name, country, lat, lon))
+
+    if args.f == "p":
+        #PNG output
+        png = plotpng.Plotpng(tide,
+                      station_dict[loc_code],
+                      args.f,
+                      timeobj)
     
 if __name__ == "__main__":
     args = parser.parse_args()
