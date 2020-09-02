@@ -2,10 +2,15 @@
 All changes to the project will be logged in this file.
 
 ## Unreleased / Development / TODO
-* Graphing of tide predictions
-* csv mode
 * Metric -> imperial conversion (heathens)
 
+## [0.4.0] - 2020-09-02
+### Added
+* CSV mode
+* Graph output
+### Fixes
+* Corrected problem with missing directory throwing errors
+* Corrected issues with locations including spaces e.g "La Jolla"
 
 ## [0.3.0] - 2019-09-14
 ### Added
