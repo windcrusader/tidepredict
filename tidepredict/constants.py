@@ -5,7 +5,7 @@ import sys
 import pathlib
 
 #default time spans
-GRAPHSPAN = 2
+GRAPHSPAN = 1
 TEXTSPAN = 3
 #home location
 HOME = pathlib.Path.home()
@@ -15,6 +15,8 @@ SAVEFILELOCATION = HOME / ".tidepredict"
 STATIONFILE = SAVEFILELOCATION / "stations.csv"
 #saveharmdata location
 SAVEHARMLOCATION = HOME / SAVEFILELOCATION / "harmdata"
+#graph file
+GRAPHFILE = SAVEFILELOCATION / "tidegraph.png"
 #ocean dict
 ocean_dict = {'P':"pacific","I":"indian","A":"atlantic"}
 #ftp base address

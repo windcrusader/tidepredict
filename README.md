@@ -79,7 +79,8 @@ This will search the research quality dataset for the hourly sea level measureme
 ```
 python tidepredict -l Lyttelton -fp
 ```
-Create a tide graph using Python pandas
+Create a tide graph using Python pandas. This is saved to the user
+home directory / .tidepredict / tidegraph.png
 
 ### Example 5
 ```

@@ -80,7 +80,8 @@ class Plotpng():
 
             plt.text(time, maxval, time.strftime(fmt))
         plt.margins(y=0.1)
-        plt.show()
+        #plt.show()
+        plt.savefig(constants.GRAPHFILE)
         #for e in self.tide.extrema(self.startdate, self.enddate):
         #    print(e)
 
