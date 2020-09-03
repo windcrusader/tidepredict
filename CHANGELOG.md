@@ -4,6 +4,10 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
+## [0.4.2] - 2020-09-03
+### Added
+* graph data in csv to .tidepredict directory
+
 ## [0.4.0] - 2020-09-02
 ### Added
 * CSV mode
