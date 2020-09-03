@@ -36,18 +36,19 @@ class Plotpng():
                                  freq='6T',
                                  tz="UTC")
 
-        print(timesutc[:5])
+        #print(timesutc[:5])
         mpl.rcParams['timezone'] = self.timeobj.tz
 
         timeslocal = self.timeobj.localiselist(timesutc)
-        print(timeslocal[:5])
+        #print(timeslocal[:5])
         #print(timeslocal)
         #Generate tide heights
         my_prediction = self.tide.at(timesutc.tolist())
         #print(my_prediction)
         df = pd.DataFrame(index=timeslocal, data = my_prediction,
                          columns = ["tide height in (m)"] )
-        print(df.head())
+        #print(df.head())
+        df.to_csv(constants.CSVFILE)
         fig, ax = plt.subplots(figsize=[12,4])
         df.plot(ax=ax, legend=None, x_compat=True)
         plt.grid(axis='y')
