@@ -48,7 +48,7 @@ class Plotpng():
         df = pd.DataFrame(index=timeslocal, data = my_prediction,
                          columns = ["tide height in (m)"] )
         #print(df.head())
-        df.to_csv(constants.CSVFILE)
+
         fig, ax = plt.subplots(figsize=[12,4])
         df.plot(ax=ax, legend=None, x_compat=True)
         plt.grid(axis='y')
@@ -83,6 +83,11 @@ class Plotpng():
         plt.margins(y=0.1)
         #plt.show()
         plt.savefig(constants.GRAPHFILE)
+        #convert datetime to timestamp using method from stackoverflow
+        #answer in ms.
+        df.index = df.index.values.astype(np.int64) // 10 ** 6
+        df.to_csv(constants.CSVFILE)
+        print(df.head())
         #for e in self.tide.extrema(self.startdate, self.enddate):
         #    print(e)
 

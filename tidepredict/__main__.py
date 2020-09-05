@@ -13,7 +13,7 @@ import datetime
 import timezonefinder
 import pathlib
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 #Setup command line arguments below. Should be self-explanatory
 parser = argparse.ArgumentParser(description=

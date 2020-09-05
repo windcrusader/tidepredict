@@ -4,6 +4,10 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
+## [0.4.3] - 2020-09-05
+### Added
+* csv graph data now outputs time as unix GMT timestamp
+
 ## [0.4.2] - 2020-09-03
 ### Added
 * graph data in csv to .tidepredict directory
