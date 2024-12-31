@@ -8,6 +8,7 @@ from io import StringIO
 from tidepredict import constants
 import json
 import pathlib
+import os
 
 def get_station_files():
     """Get bytes IO objects from each of the station list files
@@ -43,10 +44,9 @@ def create_station_dataframe():
                                    "CI", "Contributor"])
 
     #dump to file
-    if not constants.SAVEFILELOCATION:
-        constants.SAVEFILELOCATION.mkdir(parents=True)
-    else:
-        stat_df.to_csv(constants.STATIONFILE)
+    os.makedirs(os.path.dirname(constants.STATIONFILE), exist_ok=True)
+    
+    stat_df.to_csv(constants.STATIONFILE)
     return stat_df
     
 def read_station_info_file():
