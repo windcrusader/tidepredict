@@ -33,11 +33,11 @@ class Plotpng():
         timesutc = pd.date_range(self.timeobj.st_utc, 
                                  self.timeobj.st_utc + 
                                  datetime.timedelta(days=constants.GRAPHSPAN),
-                                 freq='6T',
+                                 freq='6min',
                                  tz="UTC")
 
         #print(timesutc[:5])
-        mpl.rcParams['timezone'] = self.timeobj.tz
+        mpl.rcParams['timezone'] = str(self.timeobj.tz)
 
         timeslocal = self.timeobj.localiselist(timesutc)
         #print(timeslocal[:5])
@@ -52,20 +52,19 @@ class Plotpng():
         fig, ax = plt.subplots(figsize=[12,4])
         df.plot(ax=ax, legend=None, x_compat=True)
         plt.grid(axis='y')
-        plt.tick_params(axis="y",direction="in",pad=-25)
-        plt.tick_params(axis="x",direction="in",pad=-15,)
+        #plt.tick_params(axis="y",direction="in",pad=-25)
+        #plt.tick_params(axis="x",direction="in",pad=-15,)
         
         plt.title(self.station_data['name'] + ", " 
                  + self.station_data['country'] + " Timezone: " +
                  self.station_data['tzone'])
         plt.ylabel("tide height in metres")
         hours = mdates.HourLocator(interval = 1)
-        h_fmt = mdates.DateFormatter('%-I')
+        h_fmt = mdates.DateFormatter('%H')
         ax.xaxis.set_major_locator(hours)
         ax.xaxis.set_major_formatter(h_fmt)
         plt.fill_between(df.index,df['tide height in (m)'],
-                        df['tide height in (m)'].min(), color='b', alpha=0.2)
-        plt.xticks(rotation=0)
+                        df['tide height in (m)'].min(), color='b', alpha=0.8)
 
         #plot extrema dates as text
         extremaUTC = self.tide.extrema(self.timeobj.st_utc, 
@@ -80,9 +79,9 @@ class Plotpng():
             time = self.timeobj.localise(e[0])
 
             plt.text(time, maxval, time.strftime(fmt))
-        plt.margins(y=0.1)
+        #plt.margins(y=0.1)
         #plt.show()
-        plt.savefig(constants.GRAPHFILE)
+        plt.savefig(constants.GRAPHFILE, format="svg")
         #convert datetime to timestamp using method from stackoverflow
         #answer in ms.
         df.index = df.index.values.astype(np.int64) // 10 ** 6

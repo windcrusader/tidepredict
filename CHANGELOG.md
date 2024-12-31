@@ -4,6 +4,14 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
+## [0.4.6] - 2024-12-31
+### Fixes
+* graph format now svg
+
+## [0.4.5] - 2024-12-31
+### Fixes
+* graph creation deprecation now fixed.
+
 ## [0.4.4] - 2024-12-31
 ### Fixes
 * directory creation for station info file

@@ -16,7 +16,7 @@ STATIONFILE = SAVEFILELOCATION / "stations.csv"
 #saveharmdata location
 SAVEHARMLOCATION = HOME / SAVEFILELOCATION / "harmdata"
 #graph file
-GRAPHFILE = SAVEFILELOCATION / "tidegraph.png"
+GRAPHFILE = SAVEFILELOCATION / "tidegraph.svg"
 #csv data
 CSVFILE = SAVEFILELOCATION / "tidegraph.csv"
 #ocean dict
