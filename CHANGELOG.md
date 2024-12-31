@@ -4,6 +4,11 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
+## [0.4.4] - 2024-12-31
+### Fixes
+* directory creation for station info file
+* deprecated numpy float removed and replaced with float64
+
 ## [0.4.3] - 2020-09-05
 ### Added
 * csv graph data now outputs time as unix GMT timestamp
