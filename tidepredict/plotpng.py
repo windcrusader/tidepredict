@@ -49,8 +49,9 @@ class Plotpng():
                          columns = ["tide height in (m)"] )
         #print(df.head())
 
-        fig, ax = plt.subplots(figsize=[12,4])
-        df.plot(ax=ax, legend=None, x_compat=True)
+        #fig, ax = plt.subplots(figsize=[12,4])
+        fig, ax = plt.subplots() 
+        df.plot(ax=ax, legend=None)
         plt.grid(axis='y')
         #plt.tick_params(axis="y",direction="in",pad=-25)
         #plt.tick_params(axis="x",direction="in",pad=-15,)
@@ -64,14 +65,15 @@ class Plotpng():
         ax.xaxis.set_major_locator(hours)
         ax.xaxis.set_major_formatter(h_fmt)
         plt.fill_between(df.index,df['tide height in (m)'],
-                        df['tide height in (m)'].min(), color='b', alpha=0.8)
+                        df['tide height in (m)'].min(), color='b', alpha=0.5)
 
         #plot extrema dates as text
         extremaUTC = self.tide.extrema(self.timeobj.st_utc, 
                      self.timeobj.st_utc +
                      datetime.timedelta(days=constants.GRAPHSPAN))
         #get max extent for plotting position
-        maxval = df['tide height in (m)'].max()
+        #offset lower so it is always in the graph limits
+        maxval = df['tide height in (m)'].max() -0.1 
         fmt = "%Y-%m-%d\n%H:%M"
         for e in extremaUTC:
         #print(e)
@@ -85,7 +87,7 @@ class Plotpng():
         #convert datetime to timestamp using method from stackoverflow
         #answer in ms.
         df.index = df.index.values.astype(np.int64) // 10 ** 6
-        df.to_csv(constants.CSVFILE)
+        df.to_csv(constants.CSVFILE, float_format='%.3f')
         print(df.head())
         #for e in self.tide.extrema(self.startdate, self.enddate):
         #    print(e)

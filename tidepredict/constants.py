@@ -5,7 +5,7 @@ import sys
 import pathlib
 
 #default time spans
-GRAPHSPAN = 1
+GRAPHSPAN = 2
 TEXTSPAN = 3
 #home location
 HOME = pathlib.Path.home()
