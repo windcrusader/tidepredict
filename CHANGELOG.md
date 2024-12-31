@@ -4,6 +4,10 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
+## [0.4.8] - 2024-12-31
+### Fixes
+* Added csv index label
+
 ## [0.4.7] - 2024-12-31
 ### Fixes
 * csv data now three decimal places

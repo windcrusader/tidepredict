@@ -87,7 +87,7 @@ class Plotpng():
         #convert datetime to timestamp using method from stackoverflow
         #answer in ms.
         df.index = df.index.values.astype(np.int64) // 10 ** 6
-        df.to_csv(constants.CSVFILE, float_format='%.3f')
+        df.to_csv(constants.CSVFILE, float_format='%.3f', index_label='DateTime')
         print(df.head())
         #for e in self.tide.extrema(self.startdate, self.enddate):
         #    print(e)

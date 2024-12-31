@@ -14,7 +14,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setuptools.setup(
     name="tidepredict",
-    version="0.4.7",
+    version="0.4.8",
     description="Tide Prediction tools",
     long_description=README,
     long_description_content_type="text/markdown",
