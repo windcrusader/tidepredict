@@ -49,8 +49,7 @@ class Plotpng():
                          columns = ["tide height in (m)"] )
         #print(df.head())
 
-        #fig, ax = plt.subplots(figsize=[12,4])
-        fig, ax = plt.subplots() 
+        fig, ax = plt.subplots(figsize=[12,4])
         df.plot(ax=ax, legend=None)
         plt.grid(axis='y')
         #plt.tick_params(axis="y",direction="in",pad=-25)
@@ -75,20 +74,25 @@ class Plotpng():
         #offset lower so it is always in the graph limits
         maxval = df['tide height in (m)'].max() -0.1 
         fmt = "%Y-%m-%d\n%H:%M"
+        extrema = []
         for e in extremaUTC:
         #print(e)
         #get localised time
             time = self.timeobj.localise(e[0])
 
             plt.text(time, maxval, time.strftime(fmt))
+            extrema.append({"time":e[0], "height":e[1]})
         #plt.margins(y=0.1)
         #plt.show()
-        plt.savefig(constants.GRAPHFILE, format="svg")
+        plt.savefig(constants.GRAPHFILE, format="png")
         #convert datetime to timestamp using method from stackoverflow
         #answer in ms.
         df.index = df.index.values.astype(np.int64) // 10 ** 6
         df.to_csv(constants.CSVFILE, float_format='%.3f', index_label='DateTime')
         print(df.head())
-        #for e in self.tide.extrema(self.startdate, self.enddate):
-        #    print(e)
+        extrema_df = pd.DataFrame(extrema)
+        extrema_df.index = extrema_df['time'].values.astype(np.int64) // 10 ** 6
+        extrema_df.drop(columns=['time'], inplace=True)
+        extrema_df.to_csv(constants.EXTRMFILE, float_format='%.3f', index_label='DateTime')
+        print(extrema_df)
 

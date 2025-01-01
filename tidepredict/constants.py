@@ -16,9 +16,11 @@ STATIONFILE = SAVEFILELOCATION / "stations.csv"
 #saveharmdata location
 SAVEHARMLOCATION = HOME / SAVEFILELOCATION / "harmdata"
 #graph file
-GRAPHFILE = SAVEFILELOCATION / "tidegraph.svg"
+GRAPHFILE = SAVEFILELOCATION / "tidegraph.png"
 #csv data
 CSVFILE = SAVEFILELOCATION / "tidegraph.csv"
+#extrema csv file
+EXTRMFILE = SAVEFILELOCATION / "extrema.csv"    
 #ocean dict
 ocean_dict = {'P':"pacific","I":"indian","A":"atlantic"}
 #ftp base address

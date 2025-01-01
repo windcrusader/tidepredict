@@ -4,11 +4,15 @@ All changes to the project will be logged in this file.
 ## Unreleased / Development / TODO
 * Metric -> imperial conversion (heathens)
 
-## [0.4.8] - 2024-12-31
+## [0.4.9] - 2024-12-31
+### Added
+* Added extrema output csv which lists the high and low tide times and heights
+
+## [0.4.8] - 2024-01-01
 ### Fixes
 * Added csv index label
 
-## [0.4.7] - 2024-12-31
+## [0.4.7] - 2025-01-01
 ### Fixes
 * csv data now three decimal places
 
